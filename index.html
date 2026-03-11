@@ -6,10 +6,7 @@
 <title>センバツ甲子園 優勝予想</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Zen+Antique+Soft&family=M+PLUS+1p:wght@400;700;900&display=swap');
-  :root {
-    --crimson:#B01020;--crimson-dark:#7a0a15;--gold:#D4A017;--gold-light:#f0c84a;
-    --cream:#F5EDD8;--ink:#1a0f08;--sand:#E8D9B8;--sky:#1a3a5c;
-  }
+  :root{--crimson:#B01020;--crimson-dark:#7a0a15;--gold:#D4A017;--gold-light:#f0c84a;--cream:#F5EDD8;--ink:#1a0f08;--sand:#E8D9B8;--sky:#1a3a5c;}
   *{box-sizing:border-box;margin:0;padding:0;}
   body{font-family:'M PLUS 1p',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
   header{background:linear-gradient(135deg,var(--crimson-dark),var(--crimson) 60%,#c8192e);color:white;text-align:center;padding:20px 16px 16px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(176,16,32,.4);}
@@ -17,20 +14,14 @@
   .header-sub{font-size:11px;letter-spacing:4px;color:var(--gold-light);margin-bottom:6px;font-weight:700;}
   header h1{font-family:'Zen Antique Soft',serif;font-size:clamp(20px,5vw,32px);letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,.3);}
   .header-badge{display:inline-block;margin-top:8px;background:var(--gold);color:var(--crimson-dark);font-size:11px;font-weight:900;padding:3px 12px;border-radius:20px;}
-
-  /* LOADING */
-  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(245,237,216,.85);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+  .loading-overlay{display:none;position:fixed;inset:0;background:rgba(245,237,216,.9);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
   .loading-overlay.show{display:flex;}
   .spinner{width:40px;height:40px;border:4px solid var(--sand);border-top-color:var(--crimson);border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text{font-size:13px;font-weight:700;color:var(--crimson);letter-spacing:1px;}
-
-  /* SYNC STATUS */
-  .sync-bar{background:var(--ink);color:rgba(255,255,255,.6);font-size:11px;text-align:center;padding:4px;letter-spacing:1px;}
-  .sync-bar.synced{color:#a8d5a2;}
-  .sync-bar.error{color:#ff8a8a;}
-
-  /* TABS */
+  .sync-bar{background:var(--ink);color:rgba(255,255,255,.6);font-size:11px;text-align:center;padding:5px;letter-spacing:1px;transition:all .3s;}
+  .sync-bar.ok{color:#a8d5a2;}
+  .sync-bar.error{color:#ff8a8a;background:#5a1a1a;}
   .tabs-wrapper{background:var(--ink);padding:0 8px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;}
   .tabs-wrapper::-webkit-scrollbar{display:none;}
   .tabs{display:inline-flex;gap:2px;padding:8px 0 0;}
@@ -41,7 +32,6 @@
   .tab-rankings.active{background:var(--gold);color:var(--ink)!important;}
   .tab-admin{color:#a8d5a2!important;}
   .tab-admin.active{background:#2d5a27;color:white!important;}
-
   main{max-width:700px;margin:0 auto;padding:0 12px 80px;}
   .section-card{background:white;border-radius:12px;margin:16px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;}
   .section-header{background:linear-gradient(90deg,var(--sky),#254e7a);color:white;padding:10px 16px;font-size:13px;font-weight:700;letter-spacing:2px;}
@@ -49,8 +39,6 @@
   .section-header.admin-header{background:linear-gradient(90deg,#2d5a27,#4a7c4e);}
   .step-label{padding:14px 16px 8px;font-size:12px;font-weight:900;color:var(--crimson);letter-spacing:2px;}
   .team-count{display:inline-block;background:var(--crimson);color:white;font-size:11px;padding:2px 8px;border-radius:10px;margin-left:8px;font-weight:700;}
-
-  /* TEAMS GRID */
   .teams-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;padding:8px 12px 16px;}
   @media(min-width:480px){.teams-grid{grid-template-columns:repeat(3,1fr);}}
   .team-btn{display:flex;flex-direction:column;align-items:center;padding:10px 6px 28px;border:2px solid var(--sand);border-radius:10px;background:var(--cream);cursor:pointer;transition:all .18s;font-family:'M PLUS 1p',sans-serif;position:relative;text-align:center;width:100%;}
@@ -69,8 +57,6 @@
   .grade-SA{background:#7a0a15;color:#f0c84a;}.grade-A{background:#1a3a5c;color:white;}.grade-B{background:#4a7c4e;color:white;}.grade-C{background:#888;color:white;}
   .info-btn{position:absolute;bottom:6px;left:6px;right:6px;height:20px;border-radius:5px;background:rgba(0,0,0,.1);color:rgba(0,0,0,.5);font-size:10px;font-weight:700;line-height:20px;text-align:center;cursor:pointer;border:none;font-family:'M PLUS 1p',sans-serif;}
   .team-btn.selected .info-btn{background:rgba(255,255,255,.2);color:rgba(255,255,255,.8);}
-
-  /* SELECTED LIST */
   .selected-list{padding:0 12px 16px;}
   .sel-item{display:flex;align-items:center;background:var(--cream);border-radius:10px;padding:10px 14px;margin-bottom:6px;border:1px solid var(--sand);gap:10px;}
   .sel-name{flex:1;font-size:14px;font-weight:900;}
@@ -81,8 +67,7 @@
   .sel-round-badge.played{background:#1a3a5c;color:white;}
   .save-btn{display:block;width:calc(100% - 24px);margin:0 12px 16px;padding:14px;background:linear-gradient(135deg,var(--crimson),var(--crimson-dark));color:white;border:none;border-radius:10px;font-family:'M PLUS 1p',sans-serif;font-size:16px;font-weight:900;letter-spacing:2px;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(176,16,32,.3);}
   .save-btn:hover{transform:translateY(-2px);}
-
-  /* RANKINGS */
+  .save-btn:disabled{opacity:.5;transform:none;cursor:not-allowed;}
   .ranking-view{padding:12px 12px 16px;}
   .rank-row{display:flex;align-items:center;padding:12px 14px;border-radius:10px;margin-bottom:8px;background:var(--cream);border:1px solid var(--sand);gap:12px;}
   .rank-row.rank-1{background:linear-gradient(90deg,#fff9e6,#fffdf5);border-color:var(--gold);}
@@ -98,14 +83,12 @@
   .rank-score-label{font-size:11px;color:rgba(0,0,0,.4);font-weight:700;text-align:right;}
   .no-data{text-align:center;padding:40px 20px;color:rgba(0,0,0,.35);font-size:14px;line-height:2;}
   .rank-note{padding:0 12px 12px;font-size:11px;color:rgba(0,0,0,.4);text-align:center;line-height:1.8;}
-  .reload-btn{display:block;margin:0 auto 12px;padding:8px 20px;background:var(--sky);color:white;border:none;border-radius:20px;font-family:'M PLUS 1p',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;}
-
-  /* ADMIN */
+  .reload-btn{display:block;margin:8px auto;padding:8px 20px;background:var(--sky);color:white;border:none;border-radius:20px;font-family:'M PLUS 1p',sans-serif;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:1px;}
   .admin-intro{padding:12px 16px;font-size:12px;color:rgba(0,0,0,.5);line-height:1.8;border-bottom:1px solid var(--sand);}
   .admin-team-list{padding:8px 12px 16px;}
   .admin-row{background:var(--cream);border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--sand);}
   .admin-team-name{font-size:14px;font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-  .admin-team-name .pref-small{font-size:11px;font-weight:400;color:rgba(0,0,0,.4);}
+  .pref-small{font-size:11px;font-weight:400;color:rgba(0,0,0,.4);}
   .admin-rounds{display:flex;flex-direction:column;gap:6px;}
   .admin-round-row{display:flex;align-items:center;gap:8px;}
   .admin-round-label{font-size:11px;font-weight:700;color:var(--sky);min-width:55px;}
@@ -117,19 +100,16 @@
   .score-diff-preview.plus{color:var(--crimson);}.score-diff-preview.minus{color:#1a3a5c;}.score-diff-preview.zero{color:#888;}
   .admin-save-btn{display:block;width:calc(100% - 24px);margin:0 12px 16px;padding:13px;background:linear-gradient(135deg,#2d5a27,#4a7c4e);color:white;border:none;border-radius:10px;font-family:'M PLUS 1p',sans-serif;font-size:15px;font-weight:900;letter-spacing:2px;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(45,90,39,.3);}
   .admin-save-btn:hover{transform:translateY(-2px);}
+  .admin-save-btn:disabled{opacity:.5;transform:none;cursor:not-allowed;}
   .admin-filter{display:flex;gap:6px;padding:10px 12px 4px;flex-wrap:wrap;}
   .filter-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--sand);background:white;font-size:12px;font-weight:700;font-family:'M PLUS 1p',sans-serif;cursor:pointer;color:var(--ink);}
   .filter-btn.active{background:var(--sky);color:white;border-color:var(--sky);}
-
-  /* MODAL */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center;padding:16px;}
   .modal-overlay.open{display:flex;}
   .modal{background:white;border-radius:16px;width:100%;max-width:360px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:slideUp .25s ease;}
   @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
   .modal-header{background:linear-gradient(135deg,var(--crimson-dark),var(--crimson));color:white;padding:16px 20px;}
-  .modal-header .m-pref{font-size:11px;opacity:.7;margin-bottom:2px;}
-  .modal-header .m-name{font-size:24px;font-weight:900;font-family:'Zen Antique Soft',serif;}
-  .modal-header .m-sub{font-size:11px;opacity:.6;margin-top:4px;line-height:1.6;}
+  .m-pref{font-size:11px;opacity:.7;margin-bottom:2px;}.m-name{font-size:24px;font-weight:900;font-family:'Zen Antique Soft',serif;}.m-sub{font-size:11px;opacity:.6;margin-top:4px;line-height:1.6;}
   .modal-body{padding:16px;}
   .modal-sec-title{font-size:11px;font-weight:900;color:var(--crimson);letter-spacing:2px;margin-bottom:8px;margin-top:14px;}
   .modal-sec-title:first-child{margin-top:0;}
@@ -145,7 +125,6 @@
   .stat-value{font-size:15px;font-weight:900;}
   .stat-top{color:var(--crimson);}.stat-bot{color:#1a3a5c;}
   .modal-close{display:block;width:100%;padding:12px;background:var(--ink);color:white;border:none;font-family:'M PLUS 1p',sans-serif;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:1px;}
-
   .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:white;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;transition:transform .3s ease;z-index:999;white-space:nowrap;}
   .toast.show{transform:translateX(-50%) translateY(0);}
   .view{display:none;}.view.active{display:block;}
@@ -153,10 +132,9 @@
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loading">
   <div class="spinner"></div>
-  <div class="loading-text">データを読み込み中...</div>
+  <div class="loading-text" id="loading-text">データを読み込み中...</div>
 </div>
 
 <header>
@@ -164,11 +142,10 @@
   <h1>🏆 センバツ甲子園<br>優勝予想大会</h1>
   <div class="header-badge">32校トーナメント</div>
 </header>
-<div class="sync-bar" id="sync-bar">⏳ 同期中...</div>
+<div class="sync-bar" id="sync-bar">⏳ クラウドに接続中...</div>
 <div class="tabs-wrapper"><div class="tabs" id="tabs"></div></div>
 
 <main>
-  <!-- 参加者ビュー -->
   <div class="view active" id="view-member">
     <div class="section-card">
       <div class="section-header">STEP 1｜<span>5チームを選択</span>　<small style="font-size:10px;opacity:.7;">「詳細」で戦力確認</small></div>
@@ -178,33 +155,30 @@
     <div class="section-card" id="selected-card" style="display:none">
       <div class="section-header">選択チームの<span>得失点差合計</span></div>
       <div class="selected-list" id="selected-list"></div>
-      <button class="save-btn" onclick="saveMember()">☁️ クラウドに保存する</button>
+      <button class="save-btn" id="save-member-btn" onclick="saveMember()">☁️ クラウドに保存する</button>
     </div>
   </div>
 
-  <!-- 順位表ビュー -->
   <div class="view" id="view-rankings">
     <div class="section-card">
       <div class="section-header">🏅 <span>現在の順位表</span></div>
-      <button class="reload-btn" onclick="loadFromCloud(true)">🔄 最新データに更新</button>
+      <button class="reload-btn" onclick="loadCloud(true)">🔄 最新データに更新</button>
       <div class="ranking-view" id="ranking-view"></div>
       <div class="rank-note">得失点差の合計で順位を決定<br>試合結果は管理者タブから入力</div>
     </div>
   </div>
 
-  <!-- 管理者ビュー -->
   <div class="view" id="view-admin">
     <div class="section-card">
       <div class="section-header admin-header">⚙️ 管理者｜<span>試合結果を入力</span></div>
       <div class="admin-intro">各チームの試合スコアを入力してください。<br>得点 − 失点 = 得失点差として自動計算されます。</div>
       <div class="admin-filter" id="admin-filter"></div>
       <div class="admin-team-list" id="admin-team-list"></div>
-      <button class="admin-save-btn" onclick="saveAdmin()">☁️ 結果をクラウドに保存</button>
+      <button class="admin-save-btn" id="admin-save-btn" onclick="saveAdmin()">☁️ 結果をクラウドに保存</button>
     </div>
   </div>
 </main>
 
-<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-header">
@@ -227,40 +201,30 @@
 
 <script>
 // ===== JSONbin設定 =====
-const API_KEY = '$2a$10$RXrA8gi.DwfzFMtF9dS3duywHHTJurX5CMyxGjAZlivp/sEVlFxxa';
-const BIN_ID_KEY = 'koshien2025_binid';
-let BIN_ID = localStorage.getItem(BIN_ID_KEY) || '';
+// ※ BIN_IDは初回起動時に自動生成されてJSONbinに保存されます
+const MASTER_KEY = '$2a$10$RXrA8gi.DwfzFMtF9dS3duywHHTJurX5CMyxGjAZlivp/sEVlFxxa';
+// ↓ 初回起動後、自動で書き込まれます（手動変更不要）
+const BIN_ID = '67d02b318561e97a50f32476';
 
-async function createBin(data) {
-  const res = await fetch('https://api.jsonbin.io/v3/b', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json','X-Master-Key':API_KEY,'X-Bin-Name':'koshien2025'},
-    body: JSON.stringify(data)
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+async function cloudRead() {
+  const res = await fetch(JSONBIN_URL + '/latest', {
+    headers: { 'X-Master-Key': MASTER_KEY }
   });
+  if (!res.ok) throw new Error('read failed: ' + res.status);
   const json = await res.json();
-  return json.metadata?.id || '';
+  return json.record;
 }
 
-async function readBin() {
-  if (!BIN_ID) return null;
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-    headers: {'X-Master-Key': API_KEY}
-  });
-  const json = await res.json();
-  return json.record || null;
-}
-
-async function writeBin(data) {
-  if (!BIN_ID) {
-    BIN_ID = await createBin(data);
-    localStorage.setItem(BIN_ID_KEY, BIN_ID);
-    return;
-  }
-  await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+async function cloudWrite(data) {
+  const res = await fetch(JSONBIN_URL, {
     method: 'PUT',
-    headers: {'Content-Type':'application/json','X-Master-Key':API_KEY},
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
     body: JSON.stringify(data)
   });
+  if (!res.ok) throw new Error('write failed: ' + res.status);
+  return res.json();
 }
 
 // ===== チームデータ =====
@@ -298,74 +262,71 @@ const TEAMS_RAW = [
   [31,'高知農','高知','初出場','21世紀枠','C','C','C','C','C',3,212,5.0,0,7,1.09,1.7,1],
   [32,'長崎西','長崎','75年ぶり2回目','21世紀枠','C','C','C','C','C',7,211,3.6,0,11,1.48,2.4,5],
 ];
-function gradeAvg(gs){const m={'特A':5,'A':4,'B':3,'C':2};const v=gs.map(g=>m[g]||3);const a=v.reduce((x,y)=>x+y)/v.length;if(a>=4.5)return'特A';if(a>=3.5)return'A';if(a>=2.5)return'B';return'C';}
+function gradeAvg(gs){const m={'特A':5,'A':4,'B':3,'C':2};const a=gs.reduce((s,g)=>s+(m[g]||3),0)/gs.length;return a>=4.5?'特A':a>=3.5?'A':a>=2.5?'B':'C';}
 const TEAMS=TEAMS_RAW.map(r=>({no:r[0],name:r[1],pref:r[2],history:r[3],jingu:r[4],papers:{nikkan:r[5],spo:r[6],hochi:r[7],san:r[8],daily:r[9]},stats:{games:r[10],avg:r[11],run:r[12],hr:r[13],sb:r[14],era:r[15],ra:r[16],err:r[17]},grade:gradeAvg([r[5],r[6],r[7],r[8],r[9]])}));
 
 const ROUNDS=[{key:'r1',label:'1回戦'},{key:'r2',label:'2回戦'},{key:'qf',label:'準々決勝'},{key:'sf',label:'準決勝'},{key:'f',label:'決勝'}];
 const MEMBERS=['しんちゃん','かっちゃん','だいちゃん','まさちゃん','くろさん','ゆっきー','とみー','うっちー','みたにさん'];
 const MAX=5;
 
-// ===== アプリ状態 =====
-let cur = MEMBERS[0];
-let cloudData = { members:{}, results:{} };
+// ===== 状態 =====
+let cur=MEMBERS[0];
+let cloud={members:{},results:{}};
+function gm(m){if(!cloud.members[m])cloud.members[m]={teams:[]};return cloud.members[m];}
+function gr(){if(!cloud.results)cloud.results={};return cloud.results;}
 
-function gm(m){if(!cloudData.members[m])cloudData.members[m]={teams:[]};return cloudData.members[m];}
-function gr(){if(!cloudData.results)cloudData.results={};return cloudData.results;}
+// ===== 同期バー =====
+function setSyncBar(state,msg){
+  const b=document.getElementById('sync-bar');
+  b.className='sync-bar'+(state==='ok'?' ok':state==='error'?' error':'');
+  b.textContent=msg||{syncing:'⏳ 同期中...',ok:'✅ クラウドと同期済み',error:'⚠️ 通信エラー'}[state];
+}
+function showLoading(v,msg){
+  document.getElementById('loading').classList.toggle('show',v);
+  if(msg)document.getElementById('loading-text').textContent=msg;
+}
+function setBtnDisabled(id,v){const b=document.getElementById(id);if(b)b.disabled=v;}
 
-// ===== 起動時にクラウドから読み込み =====
-async function loadFromCloud(silent=false) {
-  if(!silent) showLoading(true);
+// ===== クラウド読み込み =====
+async function loadCloud(silent=false){
+  if(!silent)showLoading(true,'データを読み込み中...');
   setSyncBar('syncing');
-  try {
-    const data = await readBin();
-    if (data) {
-      cloudData = data;
-    }
+  try{
+    const data=await cloudRead();
+    if(data&&typeof data==='object'){cloud=data;}
     setSyncBar('ok');
-    if(!silent) showLoading(false);
     renderCurrent();
-  } catch(e) {
-    setSyncBar('error');
-    if(!silent) showLoading(false);
-    showToast('⚠️ 通信エラー。ローカルで動作中');
+  }catch(e){
+    console.error(e);
+    setSyncBar('error','⚠️ 読み込み失敗 - オフラインで動作中');
+    showToast('⚠️ クラウドへの接続に失敗しました');
+  }finally{
+    showLoading(false);
   }
 }
 
-async function saveToCloud() {
+// ===== クラウド保存 =====
+async function saveCloud(){
   setSyncBar('syncing');
-  try {
-    await writeBin(cloudData);
+  try{
+    await cloudWrite(cloud);
     setSyncBar('ok');
-  } catch(e) {
-    setSyncBar('error');
-    showToast('⚠️ 保存失敗。もう一度お試しください');
+    return true;
+  }catch(e){
+    console.error(e);
+    setSyncBar('error','⚠️ 保存失敗');
+    showToast('⚠️ 保存に失敗しました。もう一度お試しください');
+    return false;
   }
 }
-
-function setSyncBar(state) {
-  const bar = document.getElementById('sync-bar');
-  if(state==='syncing'){bar.textContent='⏳ 同期中...';bar.className='sync-bar';}
-  else if(state==='ok'){bar.textContent='✅ クラウドと同期済み';bar.className='sync-bar synced';}
-  else{bar.textContent='⚠️ 同期エラー';bar.className='sync-bar error';}
-}
-
-function showLoading(v){document.getElementById('loading').classList.toggle('show',v);}
 
 // ===== TABS =====
 function buildTabs(){
-  const el=document.getElementById('tabs');
-  el.innerHTML='';
-  MEMBERS.forEach(m=>{
-    const b=document.createElement('button');
-    b.className='tab'+(m===cur?' active':'');
-    b.textContent=m;
-    b.onclick=()=>switchMember(m);
-    el.appendChild(b);
-  });
+  const el=document.getElementById('tabs');el.innerHTML='';
+  MEMBERS.forEach(m=>{const b=document.createElement('button');b.className='tab'+(m===cur?' active':'');b.textContent=m;b.onclick=()=>switchMember(m);el.appendChild(b);});
   const rb=document.createElement('button');rb.className='tab tab-rankings';rb.textContent='🏅 順位表';rb.onclick=()=>switchView('rankings');el.appendChild(rb);
   const ab=document.createElement('button');ab.className='tab tab-admin';ab.textContent='⚙️ 管理';ab.onclick=()=>switchView('admin');el.appendChild(ab);
 }
-
 function switchMember(m){
   cur=m;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent===m));
@@ -373,36 +334,31 @@ function switchMember(m){
   document.getElementById('view-member').classList.add('active');
   renderGrid();renderSelectedList();
 }
-
 function switchView(v){
   cur='__'+v+'__';
-  document.querySelectorAll('.tab').forEach(t=>{t.classList.remove('active');});
-  if(v==='rankings') document.querySelector('.tab-rankings').classList.add('active');
-  if(v==='admin') document.querySelector('.tab-admin').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(v==='rankings')document.querySelector('.tab-rankings').classList.add('active');
+  if(v==='admin')document.querySelector('.tab-admin').classList.add('active');
   ['member','rankings','admin'].forEach(x=>document.getElementById('view-'+x).classList.remove('active'));
   document.getElementById('view-'+v).classList.add('active');
-  if(v==='rankings') renderRankings();
-  if(v==='admin') renderAdmin();
+  if(v==='rankings')renderRankings();
+  if(v==='admin')renderAdmin();
 }
-
 function renderCurrent(){
   buildTabs();
-  if(cur==='__rankings__') renderRankings();
-  else if(cur==='__admin__') renderAdmin();
-  else { switchMember(MEMBERS.includes(cur)?cur:MEMBERS[0]); }
+  if(cur==='__rankings__')renderRankings();
+  else if(cur==='__admin__')renderAdmin();
+  else switchMember(MEMBERS.includes(cur)?cur:MEMBERS[0]);
 }
 
 // ===== TEAMS GRID =====
 function gradeCls(g){return g==='特A'?'SA':g;}
-
 function renderGrid(){
   const data=gm(cur);
   document.getElementById('selected-count').textContent=data.teams.length;
-  const grid=document.getElementById('teams-grid');
-  grid.innerHTML='';
+  const grid=document.getElementById('teams-grid');grid.innerHTML='';
   TEAMS.forEach(t=>{
-    const sel=data.teams.includes(t.no);
-    const full=data.teams.length>=MAX&&!sel;
+    const sel=data.teams.includes(t.no),full=data.teams.length>=MAX&&!sel;
     const btn=document.createElement('button');
     btn.className='team-btn'+(sel?' selected':'')+(full?' disabled':'');
     btn.innerHTML=`<div class="num">No.${t.no}</div><div class="tname">${t.name}</div><div class="pref">${t.pref}</div><span class="grade-badge grade-${gradeCls(t.grade)}">${t.grade}</span><div class="check">✓</div>`;
@@ -412,24 +368,21 @@ function renderGrid(){
   });
   document.getElementById('selected-card').style.display=data.teams.length>0?'block':'none';
 }
-
 function toggleTeam(no){
-  const data=gm(cur);
-  const idx=data.teams.indexOf(no);
-  if(idx>=0)data.teams.splice(idx,1);
-  else{if(data.teams.length>=MAX)return;data.teams.push(no);}
+  const data=gm(cur);const idx=data.teams.indexOf(no);
+  if(idx>=0)data.teams.splice(idx,1);else{if(data.teams.length>=MAX)return;data.teams.push(no);}
   renderGrid();renderSelectedList();
 }
 
-// ===== 得失点差計算 =====
+// ===== 得失点差 =====
 function calcTeamDiff(no){
-  const res=gr();const key=String(no);if(!res[key])return null;
+  const res=gr(),key=String(no);if(!res[key])return null;
   let total=0,played=false;
-  ROUNDS.forEach(r=>{const rd=res[key][r.key];if(rd&&rd.scored!==''&&rd.lost!==''){total+=parseInt(rd.scored||0)-parseInt(rd.lost||0);played=true;}});
+  ROUNDS.forEach(r=>{const rd=res[key][r.key];if(rd&&rd.scored!==''&&rd.lost!=''){total+=parseInt(rd.scored||0)-parseInt(rd.lost||0);played=true;}});
   return played?total:null;
 }
-function calcMemberTotal(member){
-  const data=gm(member);let total=0,played=false;
+function calcMemberTotal(m){
+  const data=gm(m);let total=0,played=false;
   data.teams.forEach(no=>{const d=calcTeamDiff(no);if(d!==null){total+=d;played=true;}});
   return played?total:null;
 }
@@ -439,12 +392,12 @@ function renderSelectedList(){
   const data=gm(cur);const list=document.getElementById('selected-list');list.innerHTML='';
   let grand=0,anyPlayed=false;
   data.teams.forEach(no=>{
-    const t=TEAMS.find(x=>x.no===no);const diff=calcTeamDiff(no);
+    const t=TEAMS.find(x=>x.no===no),diff=calcTeamDiff(no);
     if(diff!==null){anyPlayed=true;grand+=diff;}
     const cls=diff===null?'zero':diff>0?'plus':diff<0?'minus':'zero';
     const disp=diff===null?'－':diff>0?`+${diff}`:String(diff);
     const res=gr()[String(no)]||{};
-    const badges=ROUNDS.map(r=>{const rd=res[r.key];const p=rd&&rd.scored!==''&&rd.lost!=='';return`<span class="sel-round-badge${p?' played':''}">${r.label.slice(0,3)}</span>`;}).join('');
+    const badges=ROUNDS.map(r=>{const rd=res[r.key],p=rd&&rd.scored!==''&&rd.lost!='';return`<span class="sel-round-badge${p?' played':''}">${r.label.slice(0,3)}</span>`;}).join('');
     list.innerHTML+=`<div class="sel-item"><div style="flex:1"><div class="sel-name">${t.name}</div><div class="sel-rounds">${badges}</div></div><div class="sel-diff ${cls}">${disp}</div></div>`;
   });
   if(data.teams.length>0){
@@ -454,30 +407,33 @@ function renderSelectedList(){
   }
 }
 
-// ===== SAVE MEMBER =====
+// ===== 保存 =====
 async function saveMember(){
-  await saveToCloud();
-  showToast(`✅ ${cur}の選択を保存しました！`);
+  setBtnDisabled('save-member-btn',true);
+  document.getElementById('save-member-btn').textContent='保存中...';
+  const ok=await saveCloud();
+  if(ok)showToast(`✅ ${cur}の選択を保存しました！`);
+  document.getElementById('save-member-btn').textContent='☁️ クラウドに保存する';
+  setBtnDisabled('save-member-btn',false);
 }
 
 // ===== RANKINGS =====
 function renderRankings(){
   const view=document.getElementById('ranking-view');
   const scores=MEMBERS.map(m=>{
-    const data=gm(m);const total=calcMemberTotal(m);
-    const teamNames=data.teams.map(no=>{const t=TEAMS.find(x=>x.no===no);const d=calcTeamDiff(no);const ds=d===null?'':d>0?`(+${d})`:`(${d})`;return t?`${t.name}${ds}`:'';});
-    return{member:m,total,teams:teamNames,count:data.teams.length};
-  }).sort((a,b)=>{if(a.total===null&&b.total===null)return 0;if(a.total===null)return 1;if(b.total===null)return -1;return b.total-a.total;});
+    const data=gm(m),total=calcMemberTotal(m);
+    const names=data.teams.map(no=>{const t=TEAMS.find(x=>x.no===no),d=calcTeamDiff(no);return t?`${t.name}${d===null?'':d>0?`(+${d})`:`(${d})`}`:''});
+    return{member:m,total,teams:names,count:data.teams.length};
+  }).sort((a,b)=>a.total===null&&b.total===null?0:a.total===null?1:b.total===null?-1:b.total-a.total);
   if(!scores.some(s=>s.count>0)){view.innerHTML='<div class="no-data">まだ誰も選択していません 🌸<br>各参加者のタブからチームを選んでください</div>';return;}
   view.innerHTML='';
-  const medals=['🥇','🥈','🥉'];
+  ['🥇','🥈','🥉'].forEach((medal,i)=>{if(!scores[i])return;});
   scores.forEach((s,i)=>{
     const row=document.createElement('div');
-    const rc=i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
-    row.className=`rank-row ${rc}`;
+    row.className='rank-row'+(i===0?' rank-1':i===1?' rank-2':i===2?' rank-3':'');
     const disp=s.total===null?'試合待':s.total>0?`+${s.total}`:String(s.total);
     const sc=s.total===null?'zero':s.total>0?'plus':s.total<0?'minus':'zero';
-    row.innerHTML=`<div class="rank-num">${medals[i]||(i+1)}</div><div class="rank-detail"><div class="rank-name">${s.member}</div><div class="rank-teams">${s.teams.length>0?s.teams.join('　'):'未選択'}</div></div><div style="text-align:right"><div class="rank-score ${sc}">${disp}</div><div class="rank-score-label">得失点差</div></div>`;
+    row.innerHTML=`<div class="rank-num">${['🥇','🥈','🥉'][i]||(i+1)}</div><div class="rank-detail"><div class="rank-name">${s.member}</div><div class="rank-teams">${s.teams.length>0?s.teams.join('　'):'未選択'}</div></div><div style="text-align:right"><div class="rank-score ${sc}">${disp}</div><div class="rank-score-label">得失点差</div></div>`;
     view.appendChild(row);
   });
 }
@@ -485,12 +441,11 @@ function renderRankings(){
 // ===== ADMIN =====
 let adminFilter='all';
 function renderAdmin(){
-  const filterEl=document.getElementById('admin-filter');
-  filterEl.innerHTML=[{k:'all',l:'全チーム'},{k:'未入力',l:'未入力のみ'},{k:'入力済',l:'入力済のみ'}].map(f=>`<button class="filter-btn${adminFilter===f.k?' active':''}" onclick="setFilter('${f.k}')">${f.l}</button>`).join('');
-  const res=gr();const teamList=document.getElementById('admin-team-list');teamList.innerHTML='';
+  document.getElementById('admin-filter').innerHTML=[{k:'all',l:'全チーム'},{k:'未入力',l:'未入力のみ'},{k:'入力済',l:'入力済のみ'}].map(f=>`<button class="filter-btn${adminFilter===f.k?' active':''}" onclick="setFilter('${f.k}')">${f.l}</button>`).join('');
+  const res=gr(),teamList=document.getElementById('admin-team-list');teamList.innerHTML='';
   TEAMS.forEach(t=>{
     const tRes=res[String(t.no)]||{};
-    const hasAny=ROUNDS.some(r=>{const rd=tRes[r.key];return rd&&(rd.scored!==''||rd.lost!=='');});
+    const hasAny=ROUNDS.some(r=>{const rd=tRes[r.key];return rd&&(rd.scored!==''||rd.lost!='');});
     if(adminFilter==='未入力'&&hasAny)return;
     if(adminFilter==='入力済'&&!hasAny)return;
     const row=document.createElement('div');row.className='admin-row';
@@ -499,7 +454,7 @@ function renderAdmin(){
     const roundsEl=row.querySelector(`#ar-${t.no}`);
     ROUNDS.forEach(r=>{
       const rd=tRes[r.key]||{scored:'',lost:''};
-      const diff=rd.scored!==''&&rd.lost!==''?parseInt(rd.scored)-parseInt(rd.lost):null;
+      const diff=rd.scored!==''&&rd.lost!=''?parseInt(rd.scored)-parseInt(rd.lost):null;
       const dcls=diff===null?'zero':diff>0?'plus':diff<0?'minus':'zero';
       const dtxt=diff===null?'':diff>0?`+${diff}`:String(diff);
       const rrow=document.createElement('div');rrow.className='admin-round-row';
@@ -510,27 +465,27 @@ function renderAdmin(){
 }
 function setFilter(f){adminFilter=f;renderAdmin();}
 function updatePrev(no,rkey){
-  const s=document.getElementById(`inp-${no}-${rkey}-s`).value;
-  const l=document.getElementById(`inp-${no}-${rkey}-l`).value;
+  const s=document.getElementById(`inp-${no}-${rkey}-s`).value,l=document.getElementById(`inp-${no}-${rkey}-l`).value;
   const prev=document.getElementById(`prev-${no}-${rkey}`);
   if(s===''||l===''){prev.textContent='';prev.className='score-diff-preview zero';return;}
-  const d=parseInt(s)-parseInt(l);
-  prev.textContent=d>0?`+${d}`:String(d);
-  prev.className='score-diff-preview '+(d>0?'plus':d<0?'minus':'zero');
+  const d=parseInt(s)-parseInt(l);prev.textContent=d>0?`+${d}`:String(d);prev.className='score-diff-preview '+(d>0?'plus':d<0?'minus':'zero');
 }
 async function saveAdmin(){
   const res=gr();
   TEAMS.forEach(t=>{
     ROUNDS.forEach(r=>{
-      const si=document.getElementById(`inp-${t.no}-${r.key}-s`);
-      const li=document.getElementById(`inp-${t.no}-${r.key}-l`);
+      const si=document.getElementById(`inp-${t.no}-${r.key}-s`),li=document.getElementById(`inp-${t.no}-${r.key}-l`);
       if(!si||!li)return;
       if(!res[String(t.no)])res[String(t.no)]={};
       res[String(t.no)][r.key]={scored:si.value,lost:li.value};
     });
   });
-  await saveToCloud();
-  showToast('✅ 試合結果を保存しました！');
+  setBtnDisabled('admin-save-btn',true);
+  document.getElementById('admin-save-btn').textContent='保存中...';
+  const ok=await saveCloud();
+  if(ok)showToast('✅ 試合結果を保存しました！');
+  document.getElementById('admin-save-btn').textContent='☁️ 結果をクラウドに保存';
+  setBtnDisabled('admin-save-btn',false);
 }
 
 // ===== MODAL =====
@@ -542,7 +497,7 @@ function openModal(no){
   document.getElementById('m-papers').innerHTML=[{n:'日刊',g:t.papers.nikkan},{n:'スポニチ',g:t.papers.spo},{n:'報知',g:t.papers.hochi},{n:'サンスポ',g:t.papers.san},{n:'デイリー',g:t.papers.daily}].map(p=>`<div class="paper-item"><div class="paper-name">${p.n}</div><div class="paper-grade pg-${gradeCls(p.g)}">${p.g}</div></div>`).join('');
   document.getElementById('m-games').textContent=`公式戦 ${t.stats.games}試合`;
   const sorted={};['avg','run','hr','sb','era','ra','err'].forEach(k=>{sorted[k]=TEAMS.map(t=>({no:t.no,v:t.stats[k]})).sort((a,b)=>a.v-b.v);});
-  function getRank(k,no){const asc=['era','ra','err'].includes(k);const idx=sorted[k].findIndex(x=>x.no===no);if(asc){if(idx<5)return'top';if(idx>=27)return'bot';}else{if(idx>=27)return'top';if(idx<5)return'bot';}return'';}
+  function getRank(k,no){const asc=['era','ra','err'].includes(k),idx=sorted[k].findIndex(x=>x.no===no);return asc?(idx<5?'top':idx>=27?'bot':''):(idx>=27?'top':idx<5?'bot':'');}
   document.getElementById('m-stats').innerHTML=[{l:'チーム打率',v:'.'+t.stats.avg,k:'avg'},{l:'平均得点',v:t.stats.run+'点',k:'run'},{l:'本塁打',v:t.stats.hr+'本',k:'hr'},{l:'盗塁',v:t.stats.sb+'個',k:'sb'},{l:'防御率',v:t.stats.era,k:'era'},{l:'平均失点',v:t.stats.ra+'点',k:'ra'},{l:'失策',v:t.stats.err+'個',k:'err'}].map(s=>{const r=getRank(s.k,no);return`<div class="stat-item"><div class="stat-label">${s.l}</div><div class="stat-value ${r==='top'?'stat-top':r==='bot'?'stat-bot':''}">${r==='top'?'🔴':r==='bot'?'🔵':''}${s.v}</div></div>`;}).join('');
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -553,7 +508,7 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 
 // ===== 起動 =====
 buildTabs();
-loadFromCloud();
+loadCloud();
 </script>
 </body>
 </html>
