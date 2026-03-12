@@ -441,6 +441,8 @@ async function loadCloud(silent=false){
     console.error(e);
     setSyncBar('error','⚠️ 読み込み失敗 - オフラインで動作中');
     showToast('⚠️ クラウドへの接続に失敗しました');
+    renderCurrent();
+    renderLockState();
   }finally{
     showLoading(false);
   }
@@ -470,34 +472,57 @@ function buildTabs(){
 }
 function switchMember(m){
   cur=m;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent===m));
-  ['member','rankings','admin'].forEach(v=>document.getElementById('view-'+v).classList.remove('active'));
-  document.getElementById('view-member').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{
+    if(t&&t.classList)t.classList.toggle('active',t.textContent===m);
+  });
+  ['member','rankings','admin'].forEach(v=>{
+    const el=document.getElementById('view-'+v);
+    if(el)el.classList.remove('active');
+  });
+  const mv=document.getElementById('view-member');
+  if(mv)mv.classList.add('active');
   renderLockState();
-  renderGrid();renderSelectedList();
+  renderGrid();
+  renderSelectedList();
 }
 function switchView(v){
   cur='__'+v+'__';
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  if(v==='rankings')document.querySelector('.tab-rankings').classList.add('active');
-  if(v==='admin')document.querySelector('.tab-admin').classList.add('active');
-  ['member','rankings','admin'].forEach(x=>document.getElementById('view-'+x).classList.remove('active'));
-  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{if(t&&t.classList)t.classList.remove('active');});
+  const tr=document.querySelector('.tab-rankings');if(v==='rankings'&&tr)tr.classList.add('active');
+  const ta=document.querySelector('.tab-admin');if(v==='admin'&&ta)ta.classList.add('active');
+  ['member','rankings','admin'].forEach(x=>{const el=document.getElementById('view-'+x);if(el)el.classList.remove('active');});
+  const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.add('active');
   if(v==='rankings')renderRankings();
   if(v==='admin')renderAdmin();
 }
 function renderCurrent(){
   buildTabs();
-  if(cur==='__rankings__')renderRankings();
-  else if(cur==='__admin__')renderAdmin();
-  else switchMember(MEMBERS.includes(cur)?cur:MEMBERS[0]);
+  // buildTabsの後にビュー描画
+  const m=MEMBERS.includes(cur)?cur:MEMBERS[0];
+  cur=m;
+  // タブのアクティブ状態を設定
+  document.querySelectorAll('.tab').forEach(t=>{
+    if(t&&t.classList)t.classList.toggle('active',t.textContent===m);
+  });
+  // ビュー切り替え
+  ['member','rankings','admin'].forEach(v=>{
+    const el=document.getElementById('view-'+v);
+    if(el)el.classList.remove('active');
+  });
+  const mv=document.getElementById('view-member');
+  if(mv)mv.classList.add('active');
+  renderLockState();
+  renderGrid();
+  renderSelectedList();
 }
 
 // ===== TEAMS GRID =====
 function gradeCls(g){return g==='特A'?'SA':g;}
 function renderGrid(){
+  if(!MEMBERS.includes(cur))return;
   const data=gm(cur);
-  document.getElementById('selected-count').textContent=data.teams.length;
+  const sc=document.getElementById('selected-count');
+  if(sc)sc.textContent=data.teams.length;
   const grid=document.getElementById('teams-grid');grid.innerHTML='';
   TEAMS.forEach(t=>{
     const sel=data.teams.includes(t.no),full=data.teams.length>=MAX&&!sel;
@@ -531,7 +556,8 @@ function calcMemberTotal(m){
 
 // ===== SELECTED LIST =====
 function renderSelectedList(){
-  const data=gm(cur);const list=document.getElementById('selected-list');list.innerHTML='';
+  if(!MEMBERS.includes(cur))return;
+  const data=gm(cur);const list=document.getElementById('selected-list');if(!list)return;list.innerHTML='';
   let grand=0,anyPlayed=false;
   data.teams.forEach(no=>{
     const t=TEAMS.find(x=>x.no===no),diff=calcTeamDiff(no);
@@ -569,7 +595,6 @@ function renderRankings(){
   }).sort((a,b)=>a.total===null&&b.total===null?0:a.total===null?1:b.total===null?-1:b.total-a.total);
   if(!scores.some(s=>s.count>0)){view.innerHTML='<div class="no-data">まだ誰も選択していません 🌸<br>各参加者のタブからチームを選んでください</div>';return;}
   view.innerHTML='';
-  ['🥇','🥈','🥉'].forEach((medal,i)=>{if(!scores[i])return;});
   scores.forEach((s,i)=>{
     const row=document.createElement('div');
     row.className='rank-row'+(i===0?' rank-1':i===1?' rank-2':i===2?' rank-3':'');
