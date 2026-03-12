@@ -182,13 +182,26 @@
 <div class="tabs-wrapper"><div class="tabs" id="tabs"></div></div>
 
 <main>
-<span class="team-count" id="selected-count">0</span> / 5チーム</div>
-      <div class="teams-grid" id="teams-grid"></div>
+  <div class="view active" id="view-member">
+    <div id="lock-banner" style="display:none;margin-top:16px;">
+      <div class="lock-banner">
+        <div class="lock-banner-icon">🔒</div>
+        <div class="lock-banner-text">チーム選択はロック中です</div>
+        <button class="lock-unlock-btn" onclick="showPwModal(()=>{cloud.locked=false;saveCloud();renderLockState();showToast('🔓 ロック解除しました');})">解除</button>
+      </div>
+      <div class="locked-overlay">管理者によってチーム選択がロックされています。<br>変更するにはパスワードが必要です。</div>
     </div>
-    <div class="section-card" id="selected-card" style="display:none">
-      <div class="section-header">選択チームの<span>得失点差合計</span></div>
-      <div class="selected-list" id="selected-list"></div>
-      <button class="save-btn" id="save-member-btn" onclick="saveMember()">☁️ クラウドに保存する</button>
+    <div id="member-content">
+      <div class="section-card">
+        <div class="section-header">STEP 1｜<span>5チームを選択</span>　<small style="font-size:10px;opacity:.7;">「詳細」で戦力確認</small></div>
+        <div class="step-label">選択中 <span class="team-count" id="selected-count">0</span> / 5チーム</div>
+        <div class="teams-grid" id="teams-grid"></div>
+      </div>
+      <div class="section-card" id="selected-card" style="display:none">
+        <div class="section-header">選択チームの<span>得失点差合計</span></div>
+        <div class="selected-list" id="selected-list"></div>
+        <button class="save-btn" id="save-member-btn" onclick="saveMember()">☁️ クラウドに保存する</button>
+      </div>
     </div>
   </div>
 
