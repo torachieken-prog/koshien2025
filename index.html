@@ -477,10 +477,10 @@ function switchMember(m){
   });
   ['member','rankings','admin'].forEach(v=>{
     const el=document.getElementById('view-'+v);
-    if(el)el.classList.remove('active');
+    if(el){el.classList.remove('active');el.style.display='none';}
   });
   const mv=document.getElementById('view-member');
-  if(mv)mv.classList.add('active');
+  if(mv){mv.classList.add('active');mv.style.display='block';}
   renderLockState();
   renderGrid();
   renderSelectedList();
@@ -490,8 +490,9 @@ function switchView(v){
   document.querySelectorAll('.tab').forEach(t=>{if(t&&t.classList)t.classList.remove('active');});
   const tr=document.querySelector('.tab-rankings');if(v==='rankings'&&tr)tr.classList.add('active');
   const ta=document.querySelector('.tab-admin');if(v==='admin'&&ta)ta.classList.add('active');
-  ['member','rankings','admin'].forEach(x=>{const el=document.getElementById('view-'+x);if(el)el.classList.remove('active');});
-  const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.add('active');
+  // 参加者ビューを完全にクリア
+  ['member','rankings','admin'].forEach(x=>{const el=document.getElementById('view-'+x);if(el){el.classList.remove('active');el.style.display='none';}});
+  const vEl=document.getElementById('view-'+v);if(vEl){vEl.classList.add('active');vEl.style.display='block';}
   if(v==='rankings')renderRankings();
   if(v==='admin')renderAdmin();
 }
@@ -510,7 +511,7 @@ function renderCurrent(){
     if(el)el.classList.remove('active');
   });
   const mv=document.getElementById('view-member');
-  if(mv)mv.classList.add('active');
+  if(mv){mv.classList.add('active');mv.style.display='block';}
   renderLockState();
   renderGrid();
   renderSelectedList();
