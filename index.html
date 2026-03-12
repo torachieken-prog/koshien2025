@@ -262,7 +262,7 @@
 // ===== JSONbin設定 =====
 // ※ BIN_IDは初回起動時に自動生成されてJSONbinに保存されます
 const MASTER_KEY = '$2a$10$RXrA8gi.DwfzFMtF9dS3duywHHTJurX5CMyxGjAZlivp/sEVlFxxa';
-const ACCESS_KEY = '$2a$10$cARkBqzvR4kjaOBqNF5feuA6djDouha6cA1a25iSI4Hv.XvXUy/6C';
+const ACCESS_KEY = '$2a$10$EDw5RmrR2ViisAO1ahgtuOtiOX5USecBuYzyRZBsuho6.0Iwn3yyG';
 // ↓ 初回起動後、自動で書き込まれます（手動変更不要）
 const BIN_ID = '69b1473fb7ec241ddc5c7f39';
 
@@ -280,7 +280,7 @@ async function cloudRead() {
 async function cloudWrite(data) {
   const res = await fetch(JSONBIN_URL, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY },
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY, 'X-Access-Key': ACCESS_KEY },
     body: JSON.stringify(data)
   });
   if (!res.ok) throw new Error('write failed: ' + res.status);
