@@ -2,6 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>センバツ甲子園 優勝予想</title>
 <style>
@@ -477,10 +480,10 @@ function switchMember(m){
   });
   ['member','rankings','admin'].forEach(v=>{
     const el=document.getElementById('view-'+v);
-    if(el){el.classList.remove('active');el.style.display='none';}
+    if(el)el.classList.remove('active');
   });
   const mv=document.getElementById('view-member');
-  if(mv){mv.classList.add('active');mv.style.display='block';}
+  if(mv)mv.classList.add('active');
   renderLockState();
   renderGrid();
   renderSelectedList();
@@ -491,8 +494,8 @@ function switchView(v){
   const tr=document.querySelector('.tab-rankings');if(v==='rankings'&&tr)tr.classList.add('active');
   const ta=document.querySelector('.tab-admin');if(v==='admin'&&ta)ta.classList.add('active');
   // 参加者ビューを完全にクリア
-  ['member','rankings','admin'].forEach(x=>{const el=document.getElementById('view-'+x);if(el){el.classList.remove('active');el.style.display='none';}});
-  const vEl=document.getElementById('view-'+v);if(vEl){vEl.classList.add('active');vEl.style.display='block';}
+  ['member','rankings','admin'].forEach(x=>{const el=document.getElementById('view-'+x);if(el)el.classList.remove('active');});
+  const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.add('active');
   if(v==='rankings')renderRankings();
   if(v==='admin')renderAdmin();
 }
@@ -511,7 +514,7 @@ function renderCurrent(){
     if(el)el.classList.remove('active');
   });
   const mv=document.getElementById('view-member');
-  if(mv){mv.classList.add('active');mv.style.display='block';}
+  if(mv)mv.classList.add('active');
   renderLockState();
   renderGrid();
   renderSelectedList();
