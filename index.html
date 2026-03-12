@@ -399,12 +399,13 @@ async function toggleLock(){
 
 function renderLockState(){
   const locked=isLocked();
-  // 参加者ビューのロック表示
-  const banner=document.getElementById('lock-banner');
-  const content=document.getElementById('member-content');
-  if(banner&&content){
-    banner.style.display=locked?'block':'none';
-    content.style.display=locked?'none':'block';
+  // 参加者ビューが表示中のみ更新
+  const memberView=document.getElementById('view-member');
+  if(memberView&&memberView.classList.contains('active')){
+    const banner=document.getElementById('lock-banner');
+    const content=document.getElementById('member-content');
+    if(banner) banner.style.display=locked?'block':'none';
+    if(content) content.style.display=locked?'none':'block';
   }
   // 管理者タブのボタン
   const btn=document.getElementById('lock-toggle-btn');
@@ -472,6 +473,7 @@ function switchMember(m){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.textContent===m));
   ['member','rankings','admin'].forEach(v=>document.getElementById('view-'+v).classList.remove('active'));
   document.getElementById('view-member').classList.add('active');
+  renderLockState();
   renderGrid();renderSelectedList();
 }
 function switchView(v){
