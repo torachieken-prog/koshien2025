@@ -203,14 +203,15 @@
 // ===== JSONbin設定 =====
 // ※ BIN_IDは初回起動時に自動生成されてJSONbinに保存されます
 const MASTER_KEY = '$2a$10$RXrA8gi.DwfzFMtF9dS3duywHHTJurX5CMyxGjAZlivp/sEVlFxxa';
+const ACCESS_KEY = '$2a$10$cARkBqzvR4kjaOBqNF5feuA6djDouha6cA1a25iSI4Hv.XvXUy/6C';
 // ↓ 初回起動後、自動で書き込まれます（手動変更不要）
-const BIN_ID = '67d02b318561e97a50f32476';
+const BIN_ID = '69b1473fb7ec241ddc5c7f39';
 
 const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
 
 async function cloudRead() {
   const res = await fetch(JSONBIN_URL + '/latest', {
-    headers: { 'X-Master-Key': MASTER_KEY }
+    headers: { 'X-Master-Key': MASTER_KEY, 'X-Access-Key': ACCESS_KEY }
   });
   if (!res.ok) throw new Error('read failed: ' + res.status);
   const json = await res.json();
