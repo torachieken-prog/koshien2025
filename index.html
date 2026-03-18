@@ -187,7 +187,7 @@
       <div class="lock-banner">
         <div class="lock-banner-icon">🔒</div>
         <div class="lock-banner-text">チーム選択はロック中です</div>
-        <button class="lock-unlock-btn" onclick="showPwModal(()=>{cloud.locked=false;saveCloud();renderLockState();showToast('🔓 ロック解除しました');})">解除</button>
+        <button class="lock-unlock-btn" onclick="showPwModal(()=>{cloud.locked=false;saveCloud().then(ok=>{if(ok){renderLockState();showToast('🔓 ロック解除しました');}});})">解除</button>
       </div>
       <div class="locked-overlay">管理者によってチーム選択がロックされています。<br>変更するにはパスワードが必要です。</div>
     </div>
@@ -373,8 +373,10 @@ function submitPw(){
   if(!pw){showToast('⚠️ パスワードが設定されていません');closePwModal();return;}
   if(input===pw){
     document.getElementById('pw-error').textContent='';
+    // コールバックを先に退避してからモーダルを閉じる
+    const cb=pwModalCallback;
     closePwModal();
-    if(pwModalCallback)pwModalCallback();
+    if(cb)cb();
   }else{
     document.getElementById('pw-error').textContent='パスワードが違います';
     document.getElementById('pw-input').value='';
@@ -400,18 +402,15 @@ function setPassword(){
 async function toggleLock(){
   if(!getPassword()){showToast('⚠️ 先にパスワードを設定してください');return;}
   if(!isLocked()){
-    // ロックする
     cloud.locked=true;
-    await saveCloud();
-    renderLockState();
-    showToast('🔒 チーム選択をロックしました');
+    const ok=await saveCloud();
+    if(ok){renderLockState();showToast('🔒 チーム選択をロックしました');}
   }else{
-    // 解除する（パスワード確認）
-    showPwModal(async()=>{
+    showPwModal(()=>{
       cloud.locked=false;
-      await saveCloud();
-      renderLockState();
-      showToast('🔓 ロックを解除しました');
+      saveCloud().then(ok=>{
+        if(ok){renderLockState();showToast('🔓 ロックを解除しました');}
+      });
     });
   }
 }
