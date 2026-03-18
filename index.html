@@ -351,7 +351,7 @@ let cloud={members:{},results:{},locked:false,password:''};
 function gm(m){if(!cloud.members[m])cloud.members[m]={teams:[]};return cloud.members[m];}
 function gr(){if(!cloud.results)cloud.results={};return cloud.results;}
 function isLocked(){return !!cloud.locked;}
-function getPassword(){return cloud.password||'';}
+function getPassword(){return localStorage.getItem('koshien_admin_pw')||'';}
 
 // ===== ロック機能 =====
 let pwModalCallback=null;
@@ -368,8 +368,8 @@ function closePwModal(){
   pwModalCallback=null;
 }
 function submitPw(){
-  const input=document.getElementById('pw-input').value;
-  const pw=getPassword();
+  const input=String(document.getElementById('pw-input').value).trim();
+  const pw=String(getPassword()).trim();
   if(!pw){showToast('⚠️ パスワードが設定されていません');closePwModal();return;}
   if(input===pw){
     document.getElementById('pw-error').textContent='';
@@ -385,13 +385,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
 
 function setPassword(){
   const inp=document.getElementById('new-pw-input');
-  const val=inp.value.trim();
-  if(!/^\d{4}$/.test(val)){document.getElementById('pw-set-msg').textContent='⚠️ 数字4桁で入力してください';document.getElementById('pw-set-msg').style.color='#c62828';return;}
-  cloud.password=val;
-  document.getElementById('pw-set-msg').textContent='✅ パスワードを設定しました';
+  const val=String(inp.value).trim();
+  if(!/^[0-9]{4}$/.test(val)){
+    document.getElementById('pw-set-msg').textContent='⚠️ 数字4桁で入力してください';
+    document.getElementById('pw-set-msg').style.color='#c62828';return;
+  }
+  // パスワードはこの端末のlocalStorageに保存（管理者端末のみ）
+  localStorage.setItem('koshien_admin_pw', val);
+  document.getElementById('pw-set-msg').textContent='✅ パスワードを設定しました（この端末のみ）';
   document.getElementById('pw-set-msg').style.color='#2d5a27';
   inp.value='';
-  // 保存はしない（ロック操作時に一緒に保存）
 }
 
 async function toggleLock(){
