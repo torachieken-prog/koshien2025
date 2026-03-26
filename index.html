@@ -422,17 +422,17 @@ const SCHEDULE=[
     {time:'9:00',round:'r2',home:'神村学園',away:'智弁学園',homeNo:28,awayNo:17,score:'1-2',done:true},
     {time:'11:30',round:'r2',home:'花咲徳栄',away:'日本文理',homeNo:6,awayNo:12,score:'17-0',done:true},
   ]},
-  {date:'3/26(木)',day:8,today:true,games:[
+  {date:'3/26(木)',day:8,today:false,games:[
     {time:'8:30',round:'r2',home:'大垣日大',away:'山梨学院',homeNo:15,awayNo:5,score:'1-3',done:true},
     {time:'11:00',round:'r2',home:'東北',away:'英明',homeNo:4,awayNo:24,score:'3-6',done:true},
-    {time:'13:30',round:'r2',home:'三重',away:'大阪桐蔭',homeNo:14,awayNo:18,score:'',done:false},
-    {time:'16:00',round:'r2',home:'専大松戸',away:'九州国際大付',homeNo:7,awayNo:26,score:'',done:false},
+    {time:'13:30',round:'r2',home:'三重',away:'大阪桐蔭',homeNo:14,awayNo:18,score:'2-1',done:true},
+    {time:'16:00',round:'r2',home:'専大松戸',away:'九州国際大付',homeNo:7,awayNo:26,score:'0-1',done:true},
   ]},
-  {date:'3/27(金)',day:9,today:false,games:[
+  {date:'3/27(金)',day:9,today:true,games:[
     {time:'8:30',round:'qf',home:'中京大中京',away:'八戸学院光星',homeNo:13,awayNo:3,score:'',done:false},
     {time:'11:00',round:'qf',home:'智弁学園',away:'花咲徳栄',homeNo:17,awayNo:6,score:'',done:false},
-    {time:'13:30',round:'qf',home:'山梨学院',away:'英明',homeNo:5,awayNo:24,score:'',done:false},
-    {time:'16:00',round:'qf',home:'TBD',away:'TBD',homeNo:0,awayNo:0,score:'',done:false},
+    {time:'13:30',round:'qf',home:'大垣日大',away:'英明',homeNo:15,awayNo:24,score:'',done:false},
+    {time:'16:00',round:'qf',home:'三重',away:'九州国際大付',homeNo:14,awayNo:26,score:'',done:false},
   ]},
   {date:'3/28(土)',day:10,today:false,games:[
     {time:'',round:'',home:'',away:'',homeNo:0,awayNo:0,score:'休養日',done:false,rest:true},
@@ -803,6 +803,12 @@ function renderSchedule(){
   const col=document.getElementById('schedule-col');
   if(!col)return;
   col.innerHTML='';
+  // 凡例
+  col.innerHTML=`<div style="background:white;border-radius:10px;padding:10px 14px;margin:12px 0 4px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:700;">
+    <span style="color:rgba(0,0,0,.5);letter-spacing:1px;">予想者：</span>
+    <span style="background:var(--crimson);color:white;padding:2px 8px;border-radius:10px;">🔴 左チーム予想</span>
+    <span style="background:var(--sky);color:white;padding:2px 8px;border-radius:10px;">🔵 右チーム予想</span>
+  </div>`;
   // 順位表も更新
   const rv=document.getElementById('ranking-view-schedule');
   if(rv){
