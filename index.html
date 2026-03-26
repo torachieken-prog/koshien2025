@@ -164,6 +164,36 @@
   .lock-toggle-btn.lock{background:linear-gradient(135deg,#8b2020,#5a1a1a);color:white;}
   .lock-toggle-btn.unlock{background:linear-gradient(135deg,#2d5a27,#4a7c4e);color:white;}
   .lock-toggle-btn{justify-content:center;}
+  .tab-schedule{color:#f9c74f!important;}
+  .tab-schedule.active{background:#f9c74f;color:var(--ink)!important;}
+
+  /* 日程+順位 2カラム */
+  .schedule-rankings-wrap{display:flex;gap:12px;align-items:flex-start;}
+  .schedule-col{flex:3;min-width:0;}
+  .rankings-col{flex:2;min-width:0;}
+  @media(max-width:600px){.schedule-rankings-wrap{flex-direction:column;}}
+
+  /* 日程 */
+  .day-block{background:white;border-radius:12px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;}
+  .day-header{background:linear-gradient(90deg,var(--sky),#254e7a);color:white;padding:8px 14px;font-size:12px;font-weight:900;letter-spacing:2px;display:flex;align-items:center;gap:8px;}
+  .day-header .day-date{flex:1;}
+  .day-header .day-status{font-size:10px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;}
+  .game-row{padding:10px 14px;border-bottom:1px solid var(--sand);last-child{border:none};}
+  .game-row:last-child{border-bottom:none;}
+  .game-time{font-size:10px;color:rgba(0,0,0,.4);font-weight:700;margin-bottom:4px;}
+  .game-teams{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:900;}
+  .game-team{flex:1;}
+  .game-team.home{text-align:right;}
+  .game-team.away{text-align:left;}
+  .game-score{font-size:16px;font-weight:900;min-width:60px;text-align:center;color:var(--crimson);}
+  .game-score.pending{color:rgba(0,0,0,.3);font-size:12px;}
+  .game-round{font-size:10px;color:rgba(0,0,0,.4);font-weight:700;margin-bottom:2px;}
+  .game-members{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;padding-top:6px;border-top:1px solid var(--sand);}
+  .game-member-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--sand);color:var(--ink);}
+  .game-member-chip.home-pick{background:var(--crimson);color:white;}
+  .game-member-chip.away-pick{background:var(--sky);color:white;}
+  .game-winner{font-weight:900;}
+  .today-marker{background:#fff9e6;border-left:3px solid var(--gold);}
 </style>
 </head>
 <body>
@@ -201,6 +231,19 @@
         <div class="section-header">選択チームの<span>得失点差合計</span></div>
         <div class="selected-list" id="selected-list"></div>
         <button class="save-btn" id="save-member-btn" onclick="saveMember()">☁️ クラウドに保存する</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-schedule">
+    <div class="schedule-rankings-wrap">
+      <div class="schedule-col" id="schedule-col"></div>
+      <div class="rankings-col">
+        <div class="section-card">
+          <div class="section-header">🏅 <span>現在の順位表</span></div>
+          <div class="ranking-view" id="ranking-view-schedule"></div>
+          <div class="rank-note">得失点差の合計で順位を決定</div>
+        </div>
       </div>
     </div>
   </div>
@@ -342,6 +385,69 @@ function gradeAvg(gs){const m={'特A':5,'A':4,'B':3,'C':2};const a=gs.reduce((s,
 const TEAMS=TEAMS_RAW.map(r=>({no:r[0],name:r[1],pref:r[2],history:r[3],jingu:r[4],papers:{nikkan:r[5],spo:r[6],hochi:r[7],san:r[8],daily:r[9]},stats:{games:r[10],avg:r[11],run:r[12],hr:r[13],sb:r[14],era:r[15],ra:r[16],err:r[17]},grade:gradeAvg([r[5],r[6],r[7],r[8],r[9]])}));
 
 const ROUNDS=[{key:'r1',label:'1回戦'},{key:'r2',label:'2回戦'},{key:'qf',label:'準々決勝'},{key:'sf',label:'準決勝'},{key:'f',label:'決勝'}];
+
+// ===== 試合日程データ =====
+const SCHEDULE=[
+  {date:'3/19(木)',day:1,today:false,games:[
+    {time:'10:30',round:'r1',home:'帝京',away:'沖縄尚学',homeNo:10,awayNo:30,score:'4-3',done:true},
+    {time:'13:00',round:'r1',home:'阿南光',away:'中京大中京',homeNo:25,awayNo:13,score:'1-3',done:true},
+    {time:'15:30',round:'r1',home:'八戸学院光星',away:'崇徳',homeNo:3,awayNo:22,score:'15-6',done:true},
+  ]},
+  {date:'3/20(金)',day:2,today:false,games:[
+    {time:'9:00',round:'r1',home:'滋賀学園',away:'長崎西',homeNo:19,awayNo:32,score:'5-4',done:true},
+    {time:'11:30',round:'r1',home:'横浜',away:'神村学園',homeNo:9,awayNo:28,score:'0-2',done:true},
+    {time:'14:00',round:'r1',home:'花巻東',away:'智弁学園',homeNo:2,awayNo:17,score:'0-4',done:true},
+  ]},
+  {date:'3/21(土)',day:3,today:false,games:[
+    {time:'9:00',round:'r1',home:'東洋大姫路',away:'花咲徳栄',homeNo:21,awayNo:6,score:'2-3',done:true},
+    {time:'11:30',round:'r1',home:'高知農',away:'日本文理',homeNo:31,awayNo:12,score:'1-8',done:true},
+    {time:'14:00',round:'r1',home:'北照',away:'専大松戸',homeNo:1,awayNo:7,score:'0-4',done:true},
+  ]},
+  {date:'3/22(日)',day:4,today:false,games:[
+    {time:'9:00',round:'r1',home:'神戸国際大付',away:'九州国際大付',homeNo:16,awayNo:26,score:'3-4',done:true},
+    {time:'11:30',round:'r1',home:'近江',away:'大垣日大',homeNo:20,awayNo:15,score:'1-2',done:true},
+    {time:'14:00',round:'r1',home:'山梨学院',away:'長崎日大',homeNo:5,awayNo:27,score:'5-3',done:true},
+  ]},
+  {date:'3/23(月)',day:5,today:false,games:[
+    {time:'9:00',round:'r1',home:'東北',away:'帝京長岡',homeNo:4,awayNo:11,score:'5-1',done:true},
+    {time:'11:30',round:'r1',home:'高川学園',away:'英明',homeNo:23,awayNo:24,score:'3-5',done:true},
+    {time:'14:00',round:'r1',home:'三重',away:'佐野日大',homeNo:14,awayNo:8,score:'2-0',done:true},
+  ]},
+  {date:'3/24(火)',day:6,today:false,games:[
+    {time:'9:00',round:'r1',home:'熊本工',away:'大阪桐蔭',homeNo:29,awayNo:18,score:'0-4',done:true},
+    {time:'11:30',round:'r2',home:'帝京',away:'中京大中京',homeNo:10,awayNo:13,score:'4-9',done:true},
+    {time:'14:00',round:'r2',home:'八戸学院光星',away:'滋賀学園',homeNo:3,awayNo:19,score:'5-4',done:true},
+  ]},
+  {date:'3/25(水)',day:7,today:false,games:[
+    {time:'9:00',round:'r2',home:'神村学園',away:'智弁学園',homeNo:28,awayNo:17,score:'1-2',done:true},
+    {time:'11:30',round:'r2',home:'花咲徳栄',away:'日本文理',homeNo:6,awayNo:12,score:'17-0',done:true},
+  ]},
+  {date:'3/26(木)',day:8,today:true,games:[
+    {time:'8:30',round:'r2',home:'大垣日大',away:'山梨学院',homeNo:15,awayNo:5,score:'1-3',done:true},
+    {time:'11:00',round:'r2',home:'東北',away:'英明',homeNo:4,awayNo:24,score:'3-6',done:true},
+    {time:'13:30',round:'r2',home:'三重',away:'大阪桐蔭',homeNo:14,awayNo:18,score:'',done:false},
+    {time:'16:00',round:'r2',home:'専大松戸',away:'九州国際大付',homeNo:7,awayNo:26,score:'',done:false},
+  ]},
+  {date:'3/27(金)',day:9,today:false,games:[
+    {time:'8:30',round:'qf',home:'中京大中京',away:'八戸学院光星',homeNo:13,awayNo:3,score:'',done:false},
+    {time:'11:00',round:'qf',home:'智弁学園',away:'花咲徳栄',homeNo:17,awayNo:6,score:'',done:false},
+    {time:'13:30',round:'qf',home:'山梨学院',away:'英明',homeNo:5,awayNo:24,score:'',done:false},
+    {time:'16:00',round:'qf',home:'TBD',away:'TBD',homeNo:0,awayNo:0,score:'',done:false},
+  ]},
+  {date:'3/28(土)',day:10,today:false,games:[
+    {time:'',round:'',home:'',away:'',homeNo:0,awayNo:0,score:'休養日',done:false,rest:true},
+  ]},
+  {date:'3/29(日)',day:11,today:false,games:[
+    {time:'9:00',round:'sf',home:'準決勝1',away:'',homeNo:0,awayNo:0,score:'',done:false},
+    {time:'11:30',round:'sf',home:'準決勝2',away:'',homeNo:0,awayNo:0,score:'',done:false},
+  ]},
+  {date:'3/30(月)',day:12,today:false,games:[
+    {time:'',round:'',home:'',away:'',homeNo:0,awayNo:0,score:'休養日',done:false,rest:true},
+  ]},
+  {date:'3/31(火)',day:13,today:false,games:[
+    {time:'10:00',round:'f',home:'決勝',away:'',homeNo:0,awayNo:0,score:'',done:false},
+  ]},
+];
 const MEMBERS=['しんちゃん','かっちゃん','だいちゃん','まさちゃん','くろさん','ゆっきー','とみー','うっちー','みたにさん'];
 const MAX=5;
 
@@ -485,6 +591,7 @@ async function saveCloud(){
 function buildTabs(){
   const el=document.getElementById('tabs');el.innerHTML='';
   MEMBERS.forEach(m=>{const b=document.createElement('button');b.className='tab'+(m===cur?' active':'');b.textContent=m;b.onclick=()=>switchMember(m);el.appendChild(b);});
+  const schb=document.createElement('button');schb.className='tab tab-schedule';schb.textContent='📅 日程';schb.onclick=()=>switchView('schedule');el.appendChild(schb);
   const rb=document.createElement('button');rb.className='tab tab-rankings';rb.textContent='🏅 順位表';rb.onclick=()=>switchView('rankings');el.appendChild(rb);
   const ab=document.createElement('button');ab.className='tab tab-admin';ab.textContent='⚙️ 管理';ab.onclick=()=>switchView('admin');el.appendChild(ab);
 }
@@ -506,13 +613,14 @@ function switchMember(m){
 function switchView(v){
   cur='__'+v+'__';
   document.querySelectorAll('.tab').forEach(t=>{if(t&&t.classList)t.classList.remove('active');});
+  const ts=document.querySelector('.tab-schedule');if(v==='schedule'&&ts)ts.classList.add('active');
   const tr=document.querySelector('.tab-rankings');if(v==='rankings'&&tr)tr.classList.add('active');
   const ta=document.querySelector('.tab-admin');if(v==='admin'&&ta)ta.classList.add('active');
-  // 参加者ビューを完全にクリア
-  ['member','rankings','admin'].forEach(x=>{const el=document.getElementById('view-'+x);if(el)el.classList.remove('active');});
+  ['member','rankings','admin','schedule'].forEach(x=>{const el=document.getElementById('view-'+x);if(el)el.classList.remove('active');});
   const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.add('active');
   if(v==='rankings')renderRankings();
   if(v==='admin')renderAdmin();
+  if(v==='schedule')renderSchedule();
 }
 function renderCurrent(){
   buildTabs();
@@ -690,10 +798,60 @@ function openModal(no){
 function closeModal(e){if(e.target.id==='modal-overlay')closeModalBtn();}
 function closeModalBtn(){document.getElementById('modal-overlay').classList.remove('open');}
 
+// ===== SCHEDULE =====
+function renderSchedule(){
+  const col=document.getElementById('schedule-col');
+  if(!col)return;
+  col.innerHTML='';
+  // 順位表も更新
+  const rv=document.getElementById('ranking-view-schedule');
+  if(rv){
+    const tmp=document.getElementById('ranking-view');
+    renderRankings();
+    // ranking-view-scheduleにコピー
+    rv.innerHTML=document.getElementById('ranking-view').innerHTML;
+    if(tmp)tmp.innerHTML=rv.innerHTML;
+  }
+  SCHEDULE.forEach(day=>{
+    const block=document.createElement('div');
+    block.className='day-block';
+    const isToday=day.today;
+    const allDone=day.games.every(g=>g.done||g.rest);
+    const statusLabel=isToday?'🔥 本日':allDone?'終了':'予定';
+    block.innerHTML=`<div class="day-header${isToday?' today-marker':''}"><span class="day-date">第${day.day}日　${day.date}</span><span class="day-status">${statusLabel}</span></div>`;
+    day.games.forEach(g=>{
+      if(g.rest){
+        block.innerHTML+=`<div class="game-row" style="text-align:center;padding:12px;color:rgba(0,0,0,.4);font-size:12px;font-weight:700;">🌸 休養日</div>`;
+        return;
+      }
+      if(!g.home&&!g.away)return;
+      // このチームを選んでいるメンバーを探す
+      const homeMembers=g.homeNo?MEMBERS.filter(m=>gm(m).teams.includes(g.homeNo)):[];
+      const awayMembers=g.awayNo?MEMBERS.filter(m=>gm(m).teams.includes(g.awayNo)):[];
+      const chips=[
+        ...homeMembers.map(m=>`<span class="game-member-chip home-pick">🔴${m}</span>`),
+        ...awayMembers.map(m=>`<span class="game-member-chip away-pick">🔵${m}</span>`),
+      ].join('');
+      const roundLabel={r1:'1回戦',r2:'2回戦',qf:'準々決勝',sf:'準決勝',f:'決勝'}[g.round]||g.round;
+      const scoreHtml=g.done
+        ?`<div class="game-score">${g.score}</div>`
+        :`<div class="game-score pending">${g.time||'TBD'}</div>`;
+      const membersHtml=chips?`<div class="game-members">${chips}</div>`:'';
+      const row=document.createElement('div');
+      row.className='game-row'+(g.done?'':' today-marker');
+      row.innerHTML=`<div class="game-round">${roundLabel}</div><div class="game-teams"><div class="game-team home">${g.home}</div>${scoreHtml}<div class="game-team away">${g.away}</div></div>${membersHtml}`;
+      block.appendChild(row);
+    });
+    col.appendChild(block);
+  });
+}
+
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ===== 起動 =====
 buildTabs();
+// 日程タブをデフォルトに
+switchView('schedule');
 loadCloud();
 </script>
 </body>
