@@ -821,30 +821,24 @@ function renderSchedule(){
     rv.innerHTML=document.getElementById('ranking-view').innerHTML;
     if(tmp)tmp.innerHTML=rv.innerHTML;
   }
-  // 今日を先頭に、過去は末尾に
-  const sorted=[...SCHEDULE].sort((a,b)=>{
-    if(a.today&&!b.today)return -1;
-    if(!a.today&&b.today)return 1;
-    const aDone=a.games.every(g=>g.done||g.rest);
-    const bDone=b.games.every(g=>g.done||g.rest);
-    if(!aDone&&bDone)return -1;
-    if(aDone&&!bDone)return 1;
-    return a.day-b.day;
-  });
-  sorted.forEach(day=>{
+  // 今日→未来→過去の順に表示
+  const todayDays=SCHEDULE.filter(d=>d.today);
+  const futureDays=SCHEDULE.filter(d=>!d.today&&!d.games.every(g=>g.done||g.rest));
+  const pastDays=SCHEDULE.filter(d=>!d.today&&d.games.every(g=>g.done||g.rest)).reverse();
+
+  function renderDay(day){
     const block=document.createElement('div');
     block.className='day-block';
     const isToday=day.today;
     const allDone=day.games.every(g=>g.done||g.rest);
     const statusLabel=isToday?'🔥 本日':allDone?'終了':'予定';
-    block.innerHTML=`<div class="day-header${isToday?' today-marker':''}"><span class="day-date">第${day.day}日　${day.date}</span><span class="day-status">${statusLabel}</span></div>`;
+    block.innerHTML=`<div class="day-header"><span class="day-date">第${day.day}日　${day.date}</span><span class="day-status">${statusLabel}</span></div>`;
     day.games.forEach(g=>{
       if(g.rest){
         block.innerHTML+=`<div class="game-row" style="text-align:center;padding:12px;color:rgba(0,0,0,.4);font-size:12px;font-weight:700;">🌸 休養日</div>`;
         return;
       }
       if(!g.home&&!g.away)return;
-      // このチームを選んでいるメンバーを探す
       const homeMembers=g.homeNo?MEMBERS.filter(m=>gm(m).teams.includes(g.homeNo)):[];
       const awayMembers=g.awayNo?MEMBERS.filter(m=>gm(m).teams.includes(g.awayNo)):[];
       const roundLabel={r1:'1回戦',r2:'2回戦',qf:'準々決勝',sf:'準決勝',f:'決勝'}[g.round]||g.round;
@@ -860,7 +854,34 @@ function renderSchedule(){
       block.appendChild(row);
     });
     col.appendChild(block);
-  });
+  }
+
+  // 今日→未来→過去（折りたたみ）
+  [...todayDays,...futureDays].forEach(renderDay);
+
+  // 過去の試合は折りたたみ
+  if(pastDays.length>0){
+    const pastToggle=document.createElement('div');
+    pastToggle.style.cssText='background:white;border-radius:10px;margin:12px 0 4px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;';
+    pastToggle.innerHTML=`<div id="past-header" onclick="togglePast()" style="padding:10px 16px;font-size:12px;font-weight:900;color:rgba(0,0,0,.5);cursor:pointer;display:flex;justify-content:space-between;align-items:center;letter-spacing:1px;">📋 過去の試合結果（${pastDays.length}日分）<span id="past-arrow">▼</span></div><div id="past-content" style="display:none;"></div>`;
+    col.appendChild(pastToggle);
+    const pastContent=pastToggle.querySelector('#past-content');
+    pastDays.forEach(day=>{
+      const tmp=col;
+      col=pastContent;
+      renderDay(day);
+      col=tmp;
+    });
+  }
+}
+
+function togglePast(){
+  const c=document.getElementById('past-content');
+  const a=document.getElementById('past-arrow');
+  if(!c)return;
+  const open=c.style.display==='none';
+  c.style.display=open?'block':'none';
+  if(a)a.textContent=open?'▲':'▼';
 }
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
