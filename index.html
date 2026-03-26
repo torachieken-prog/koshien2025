@@ -189,9 +189,12 @@
   .game-score.pending{color:rgba(0,0,0,.3);font-size:12px;}
   .game-round{font-size:10px;color:rgba(0,0,0,.4);font-weight:700;margin-bottom:2px;}
   .game-members{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;padding-top:6px;border-top:1px solid var(--sand);}
-  .game-member-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--sand);color:var(--ink);}
+  .game-member-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
   .game-member-chip.home-pick{background:var(--crimson);color:white;}
   .game-member-chip.away-pick{background:var(--sky);color:white;}
+  .game-members-split{display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--sand);gap:8px;}
+  .game-members-home{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-start;flex:1;}
+  .game-members-away{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end;flex:1;}
   .game-winner{font-weight:900;}
   .today-marker{background:#fff9e6;border-left:3px solid var(--gold);}
 </style>
@@ -804,10 +807,10 @@ function renderSchedule(){
   if(!col)return;
   col.innerHTML='';
   // 凡例
-  col.innerHTML=`<div style="background:white;border-radius:10px;padding:10px 14px;margin:12px 0 4px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:11px;font-weight:700;">
-    <span style="color:rgba(0,0,0,.5);letter-spacing:1px;">予想者：</span>
-    <span style="background:var(--crimson);color:white;padding:2px 8px;border-radius:10px;">🔴 左チーム予想</span>
-    <span style="background:var(--sky);color:white;padding:2px 8px;border-radius:10px;">🔵 右チーム予想</span>
+  col.innerHTML=`<div style="background:white;border-radius:10px;padding:8px 14px;margin:12px 0 4px;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:700;">
+    <span style="background:var(--crimson);color:white;padding:2px 10px;border-radius:10px;">← 左チーム予想</span>
+    <span style="color:rgba(0,0,0,.4);">予想者</span>
+    <span style="background:var(--sky);color:white;padding:2px 10px;border-radius:10px;">右チーム予想 →</span>
   </div>`;
   // 順位表も更新
   const rv=document.getElementById('ranking-view-schedule');
@@ -818,7 +821,17 @@ function renderSchedule(){
     rv.innerHTML=document.getElementById('ranking-view').innerHTML;
     if(tmp)tmp.innerHTML=rv.innerHTML;
   }
-  SCHEDULE.forEach(day=>{
+  // 今日を先頭に、過去は末尾に
+  const sorted=[...SCHEDULE].sort((a,b)=>{
+    if(a.today&&!b.today)return -1;
+    if(!a.today&&b.today)return 1;
+    const aDone=a.games.every(g=>g.done||g.rest);
+    const bDone=b.games.every(g=>g.done||g.rest);
+    if(!aDone&&bDone)return -1;
+    if(aDone&&!bDone)return 1;
+    return a.day-b.day;
+  });
+  sorted.forEach(day=>{
     const block=document.createElement('div');
     block.className='day-block';
     const isToday=day.today;
@@ -834,15 +847,13 @@ function renderSchedule(){
       // このチームを選んでいるメンバーを探す
       const homeMembers=g.homeNo?MEMBERS.filter(m=>gm(m).teams.includes(g.homeNo)):[];
       const awayMembers=g.awayNo?MEMBERS.filter(m=>gm(m).teams.includes(g.awayNo)):[];
-      const chips=[
-        ...homeMembers.map(m=>`<span class="game-member-chip home-pick">🔴${m}</span>`),
-        ...awayMembers.map(m=>`<span class="game-member-chip away-pick">🔵${m}</span>`),
-      ].join('');
       const roundLabel={r1:'1回戦',r2:'2回戦',qf:'準々決勝',sf:'準決勝',f:'決勝'}[g.round]||g.round;
       const scoreHtml=g.done
         ?`<div class="game-score">${g.score}</div>`
         :`<div class="game-score pending">${g.time||'TBD'}</div>`;
-      const membersHtml=chips?`<div class="game-members">${chips}</div>`:'';
+      const homeChips=homeMembers.map(m=>`<span class="game-member-chip home-pick">${m}</span>`).join('');
+      const awayChips=awayMembers.map(m=>`<span class="game-member-chip away-pick">${m}</span>`).join('');
+      const membersHtml=(homeMembers.length||awayMembers.length)?`<div class="game-members-split"><div class="game-members-home">${homeChips}</div><div class="game-members-away">${awayChips}</div></div>`:'';
       const row=document.createElement('div');
       row.className='game-row'+(g.done?'':' today-marker');
       row.innerHTML=`<div class="game-round">${roundLabel}</div><div class="game-teams"><div class="game-team home">${g.home}</div>${scoreHtml}<div class="game-team away">${g.away}</div></div>${membersHtml}`;
