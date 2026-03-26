@@ -563,13 +563,14 @@ async function loadCloud(silent=false){
     const data=await cloudRead();
     if(data&&typeof data==='object'){cloud=data;}
     setSyncBar('ok');
-    renderCurrent();
+    // 日程タブを維持、それ以外は通常描画
+    if(cur==='__schedule__'){renderSchedule();}else{renderCurrent();}
     renderLockState();
   }catch(e){
     console.error(e);
     setSyncBar('error','⚠️ 読み込み失敗 - オフラインで動作中');
     showToast('⚠️ クラウドへの接続に失敗しました');
-    renderCurrent();
+    if(cur==='__schedule__'){renderSchedule();}else{renderCurrent();}
     renderLockState();
   }finally{
     showLoading(false);
