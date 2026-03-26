@@ -192,9 +192,10 @@
   .game-member-chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
   .game-member-chip.home-pick{background:var(--crimson);color:white;}
   .game-member-chip.away-pick{background:var(--sky);color:white;}
-  .game-members-split{display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--sand);gap:8px;}
-  .game-members-home{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-start;flex:1;}
-  .game-members-away{display:flex;flex-wrap:wrap;gap:3px;justify-content:flex-end;flex:1;}
+  .game-members-split{display:flex;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--sand);gap:8px;align-items:flex-start;}
+  .game-members-home{display:flex;flex-direction:row;flex-wrap:wrap;gap:3px;justify-content:flex-start;flex:1;max-width:48%;}
+  .game-members-away{display:flex;flex-direction:row;flex-wrap:wrap;gap:3px;justify-content:flex-end;flex:1;max-width:48%;}
+  .game-member-chip{display:inline-block!important;white-space:nowrap;}
   .game-winner{font-weight:900;}
   .today-marker{background:#fff9e6;border-left:3px solid var(--gold);}
 </style>
