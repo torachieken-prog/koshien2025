@@ -429,14 +429,14 @@ const SCHEDULE=[
   {date:'3/26(木)',day:8,today:true,games:[
     {time:'8:30',round:'r2',home:'大垣日大',away:'山梨学院',homeNo:15,awayNo:5,score:'1-3',done:true},
     {time:'11:00',round:'r2',home:'東北',away:'英明',homeNo:4,awayNo:24,score:'3-6',done:true},
-    {time:'13:30',round:'r2',home:'三重',away:'大阪桐蔭',homeNo:14,awayNo:18,score:'2-1',done:true},
-    {time:'16:00',round:'r2',home:'専大松戸',away:'九州国際大付',homeNo:7,awayNo:26,score:'0-1',done:true},
+    {time:'13:30',round:'r2',home:'三重',away:'大阪桐蔭',homeNo:14,awayNo:18,score:'5-6',done:true},
+    {time:'16:00',round:'r2',home:'専大松戸',away:'九州国際大付',homeNo:7,awayNo:26,score:'8-3',done:true},
   ]},
   {date:'3/27(金)',day:9,today:false,games:[
     {time:'8:30',round:'qf',home:'中京大中京',away:'八戸学院光星',homeNo:13,awayNo:3,score:'',done:false},
     {time:'11:00',round:'qf',home:'智弁学園',away:'花咲徳栄',homeNo:17,awayNo:6,score:'',done:false},
-    {time:'13:30',round:'qf',home:'大垣日大',away:'英明',homeNo:15,awayNo:24,score:'',done:false},
-    {time:'16:00',round:'qf',home:'三重',away:'九州国際大付',homeNo:14,awayNo:26,score:'',done:false},
+    {time:'13:30',round:'qf',home:'専大松戸',away:'山梨学院',homeNo:7,awayNo:5,score:'',done:false},
+    {time:'16:00',round:'qf',home:'英明',away:'大阪桐蔭',homeNo:24,awayNo:18,score:'',done:false},
   ]},
   {date:'3/28(土)',day:10,today:false,games:[
     {time:'',round:'',home:'',away:'',homeNo:0,awayNo:0,score:'休養日',done:false,rest:true},
@@ -456,7 +456,7 @@ const MEMBERS=['しんちゃん','かっちゃん','だいちゃん','まさち�
 const MAX=5;
 
 // ===== 状態 =====
-let cur=MEMBERS[0];
+let cur='__schedule__';
 let cloud={members:{},results:{},locked:false,password:''};
 function gm(m){if(!cloud.members[m])cloud.members[m]={teams:[]};return cloud.members[m];}
 function gr(){if(!cloud.results)cloud.results={};return cloud.results;}
@@ -629,15 +629,15 @@ function switchView(v){
 }
 function renderCurrent(){
   buildTabs();
-  // buildTabsの後にビュー描画
+  if(cur==='__schedule__'){switchView('schedule');return;}
+  if(cur==='__rankings__'){switchView('rankings');return;}
+  if(cur==='__admin__'){switchView('admin');return;}
   const m=MEMBERS.includes(cur)?cur:MEMBERS[0];
   cur=m;
-  // タブのアクティブ状態を設定
   document.querySelectorAll('.tab').forEach(t=>{
     if(t&&t.classList)t.classList.toggle('active',t.textContent===m);
   });
-  // ビュー切り替え
-  ['member','rankings','admin'].forEach(v=>{
+  ['member','rankings','admin','schedule'].forEach(v=>{
     const el=document.getElementById('view-'+v);
     if(el)el.classList.remove('active');
   });
