@@ -842,9 +842,6 @@ function renderSchedule(){
     rv.innerHTML=document.getElementById('ranking-view').innerHTML;
     if(tmp)tmp.innerHTML=rv.innerHTML;
   }
-  // 勝つ条件パネルを表示
-  renderWinCondition(col);
-
   // 今日→未来→過去の順に表示
   // 休養日を除いた未来の試合を先頭に、過去を末尾に
   const futureDays=SCHEDULE.filter(d=>d.games.some(g=>!g.done&&!g.rest)).sort((a,b)=>a.day-b.day);
@@ -881,10 +878,10 @@ function renderSchedule(){
     col.appendChild(block);
   }
 
-  // 今日→未来→過去（折りたたみ）
+  // 試合予定を最初に表示
   [...todayDays,...futureDays].forEach(renderDay);
 
-  // 勝つ条件パネルを試合予定の後に表示
+  // 勝つ条件パネルを試合予定の直後に1回だけ表示
   renderWinCondition(col);
 
   // 過去の試合は折りたたみ
@@ -920,103 +917,70 @@ function renderSchedule(){
 }
 
 function renderWinCondition(col){
-  // 決勝が終わっているか確認
   const finalGame=SCHEDULE.find(d=>d.day===13);
   const finalDone=finalGame&&finalGame.games[0]&&finalGame.games[0].done;
   if(finalDone)return;
 
-  const JINEN=17; // 智弁学園
-  const SENMAT=18; // 大阪桐蔭
+  const JINEN=17;  // 智弁学園（左）
+  const OSAKA=18;  // 大阪桐蔭（右）
 
-  // 現在の得失点差を計算
   const scores=MEMBERS.map(m=>{
     const total=calcMemberTotal(m)||0;
     const teams=gm(m).teams;
-    const hasJinen=teams.includes(JINEN);
-    const hasSenmat=teams.includes(SENMAT);
-    return{member:m,total,hasJinen,hasSenmat};
+    return{member:m,total,hasJinen:teams.includes(JINEN),hasOsaka:teams.includes(OSAKA)};
   }).sort((a,b)=>b.total-a.total);
 
-  // 1位になれる可能性がある人を絞り込む
-  // 決勝の得失点差をdとすると:
-  //   智弁学園を持つ人: total + d（智弁学園が勝てばd>0、負ければd<0）
-  //   専大松戸を持つ人: total - d（専大松戸が勝てば-d>0）
-  //   両方持つ人: total（得失点差相殺）
-  //   誰も持たない人: total（変化なし）
+  const MAX_DIFF=25;
 
-  // 理論上の最大得点差（現実的に20点差程度まで）
-  const MAX_DIFF=30;
-
-  // 各メンバーが1位になれるかチェック
-  const canWin=scores.map(s=>{
-    // dを-MAX_DIFFからMAX_DIFFまで試す（dは智弁学園 - 専大松戸の得失点差）
-    let minDiff=null; // 1位になれる最小のd
+  // 各メンバーが1位になれるd（智弁学園-大阪桐蔭の得失点差）の範囲を計算
+  function getWinRange(s){
+    const wins=[];
     for(let d=-MAX_DIFF;d<=MAX_DIFF;d++){
-      const myFinal=s.hasJinen&&!s.hasSenmat?d:(!s.hasJinen&&s.hasSenmat?-d:0);
-      const myTotal=s.total+myFinal;
-      // 全員の最終スコアを計算して自分が1位かチェック
-      const allFinal=scores.map(o=>{
-        const oFinal=o.hasJinen&&!o.hasSenmat?d:(!o.hasJinen&&o.hasSenmat?-d:0);
-        return o.total+oFinal;
+      const myBonus=s.hasJinen&&!s.hasOsaka?d:s.hasOsaka&&!s.hasJinen?-d:0;
+      const myTotal=s.total+myBonus;
+      const beaten=scores.filter(o=>o.member!==s.member).some(o=>{
+        const oBonus=o.hasJinen&&!o.hasOsaka?d:o.hasOsaka&&!o.hasJinen?-d:0;
+        return o.total+oBonus>myTotal;
       });
-      const myRank=allFinal.filter(t=>t>myTotal).length;
-      if(myRank===0){
-        if(minDiff===null)minDiff=d;
-      }
+      if(!beaten)wins.push(d);
     }
-    return{...s,minDiff};
-  }).filter(s=>s.minDiff!==null);
-
-  if(canWin.length===0)return;
+    return wins;
+  }
 
   const panel=document.createElement('div');
   panel.style.cssText='background:white;border-radius:12px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;';
-  panel.innerHTML=`<div style="background:linear-gradient(90deg,#7a0a15,#B01020);color:white;padding:10px 16px;font-size:12px;font-weight:900;letter-spacing:2px;">🏆 1位になれる条件（決勝）</div>
-  <div style="padding:8px 14px;font-size:11px;color:rgba(0,0,0,.4);border-bottom:1px solid #f0e8d0;">智弁学園（左）vs 専大松戸（右）</div>`;
+  panel.innerHTML=`<div style="background:linear-gradient(90deg,#7a0a15,#B01020);color:white;padding:10px 16px;font-size:12px;font-weight:900;letter-spacing:2px;">🏆 決勝で順位はどう変わる？</div><div style="padding:6px 14px;font-size:11px;color:rgba(0,0,0,.4);border-bottom:1px solid #f0e8d0;">智弁学園（左）vs 大阪桐蔭（右）</div>`;
 
-  canWin.forEach(s=>{
-    const rank=scores.findIndex(x=>x.member===s.member)+1;
-    const teamName=s.hasJinen&&s.hasSenmat?'両方':s.hasJinen?'智弁学園':s.hasSenmat?'専大松戸':'なし';
+  let added=false;
+  scores.forEach((s,rank)=>{
+    const wins=getWinRange(s);
+    if(wins.length===0)return; // 1位になれない人は非表示
+    added=true;
+    const teamName=s.hasJinen&&s.hasOsaka?'両方':s.hasJinen?'智弁学園':s.hasOsaka?'大阪桐蔭':'なし';
+    const minD=Math.min(...wins), maxD=Math.max(...wins);
     let condMsg='';
 
-    if(!s.hasJinen&&!s.hasSenmat){
-      condMsg='決勝チームなし。他の全員の得点次第で1位の可能性あり！';
+    if(!s.hasJinen&&!s.hasOsaka){
+      condMsg='他の全員の得点次第で1位の可能性あり';
+    }else if(s.hasJinen&&!s.hasOsaka){
+      if(minD<=−MAX_DIFF)condMsg=`どんな結果でも1位確定！👑`;
+      else if(minD>0)condMsg=`智弁学園が<strong>${minD}点差以上</strong>で勝てば1位🎉`;
+      else condMsg=`智弁学園が<strong>${Math.abs(minD)}点差以内</strong>の負けでもOK`;
+    }else if(s.hasOsaka&&!s.hasJinen){
+      if(maxD>=MAX_DIFF)condMsg=`どんな結果でも1位確定！👑`;
+      else if(maxD<0)condMsg=`大阪桐蔭が<strong>${Math.abs(maxD)}点差以上</strong>で勝てば1位🎉`;
+      else condMsg=`大阪桐蔭が<strong>${maxD}点差以内</strong>の負けでもOK`;
     }else{
-      // 1位になれる得点差の範囲を見つける
-      const winDiffs=[];
-      for(let d=-MAX_DIFF;d<=MAX_DIFF;d++){
-        const myFinal=s.hasJinen&&!s.hasSenmat?d:(!s.hasJinen&&s.hasSenmat?-d:0);
-        const myTotal=s.total+myFinal;
-        const allFinal=scores.map(o=>{
-          const oFinal=o.hasJinen&&!o.hasSenmat?d:(!o.hasJinen&&o.hasSenmat?-d:0);
-          return o.total+oFinal;
-        });
-        const myRank=allFinal.filter(t=>t>myTotal).length;
-        if(myRank===0)winDiffs.push(d);
-      }
-      if(winDiffs.length===0){condMsg='条件なし';return;}
-      const minD=Math.min(...winDiffs),maxD=Math.max(...winDiffs);
-      const team1st=s.hasJinen&&!s.hasSenmat?'智弁学園':s.hasSenmat&&!s.hasJinen?'専大松戸':null;
-      if(team1st==='智弁学園'){
-        if(minD>0)condMsg=`智弁学園が<strong>${minD}点差以上</strong>で勝てば1位🎉`;
-        else if(minD<=0&&maxD>=0)condMsg=`智弁学園が<strong>${Math.abs(minD)}点差以内</strong>の負けでもOK！`;
-        else condMsg=`専大松戸が<strong>${Math.abs(maxD)}点差以上</strong>勝つと1位不可`;
-      }else if(team1st==='専大松戸'){
-        if(minD<0)condMsg=`専大松戸が<strong>${Math.abs(minD)}点差以上</strong>で勝てば1位🎉`;
-        else if(minD>=0&&maxD<0)condMsg=`専大松戸が<strong>${maxD}点差以内</strong>の負けでもOK！`;
-        else condMsg=`専大松戸が<strong>${Math.abs(minD)}点差以上</strong>で勝てば1位🎉`;
-      }else{
-        condMsg=`得失点差${minD>0?'+':''}${minD}〜${maxD>0?'+':''}${maxD}の範囲で1位`;
-      }
+      condMsg=`得点差${minD}〜${maxD}の範囲で1位`;
     }
 
     const row=document.createElement('div');
     row.style.cssText='padding:10px 14px;border-bottom:1px solid #f0e8d0;font-size:12px;line-height:1.8;';
-    row.innerHTML=`<div style="font-weight:900;color:#B01020;margin-bottom:2px;">${s.member} <span style="font-weight:400;color:rgba(0,0,0,.4);">現在${rank}位 / 予想:${teamName}</span></div><div>${condMsg}</div>`;
+    row.innerHTML=`<div style="font-weight:900;color:#B01020;margin-bottom:2px;">${s.member} <span style="font-weight:400;color:rgba(0,0,0,.4);">現在${rank+1}位・予想:${teamName}</span></div><div>${condMsg}</div>`;
     panel.appendChild(row);
   });
 
-  col.appendChild(panel);
+  if(added)col.appendChild(panel);
 }
 
 function renderConditions(col){
