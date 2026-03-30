@@ -445,10 +445,10 @@ const SCHEDULE=[
     {time:'11:00',round:'sf',home:'中京大中京',away:'智弁学園',homeNo:13,awayNo:17,score:'0-4',done:true},
     {time:'13:30',round:'sf',home:'専大松戸',away:'大阪桐蔭',homeNo:7,awayNo:18,score:'4-0',done:true},
   ]},
-  {date:'3/30(月)',day:12,today:true,games:[
+  {date:'3/30(月)',day:12,today:false,games:[
     {time:'',round:'',home:'',away:'',homeNo:0,awayNo:0,score:'休養日',done:false,rest:true},
   ]},
-  {date:'3/31(火)',day:13,today:false,games:[
+  {date:'3/31(火)',day:13,today:true,games:[
     {time:'12:30',round:'f',home:'智弁学園',away:'専大松戸',homeNo:17,awayNo:7,score:'',done:false},
   ]},
 ];
@@ -814,6 +814,8 @@ function renderSchedule(){
     <span style="color:rgba(0,0,0,.4);">予想者</span>
     <span style="background:var(--sky);color:white;padding:2px 10px;border-radius:10px;">右チーム予想 →</span>
   </div>`;
+  // 逆転条件を計算・表示
+  renderConditions(col);
   // 順位表も更新
   const rv=document.getElementById('ranking-view-schedule');
   if(rv){
@@ -823,6 +825,9 @@ function renderSchedule(){
     rv.innerHTML=document.getElementById('ranking-view').innerHTML;
     if(tmp)tmp.innerHTML=rv.innerHTML;
   }
+  // 勝つ条件パネルを表示
+  renderWinCondition(col);
+
   // 今日→未来→過去の順に表示
   const todayDays=SCHEDULE.filter(d=>d.today);
   const futureDays=SCHEDULE.filter(d=>!d.today&&!d.games.every(g=>g.done||g.rest));
@@ -891,6 +896,170 @@ function renderSchedule(){
       pastContent.appendChild(block);
     });
   }
+}
+
+function renderWinCondition(col){
+  // 現在の得失点差を計算
+  const scores=MEMBERS.map(m=>{
+    const total=calcMemberTotal(m);
+    const teams=gm(m).teams;
+    // 決勝に出場中のチームを持っているか
+    const hasFinal17=teams.includes(17); // 智弁学園
+    const hasFinal7=teams.includes(7);   // 専大松戸
+    return{member:m,total:total||0,hasFinal17,hasFinal7,hasFinalist:hasFinal17||hasFinal7};
+  }).sort((a,b)=>b.total-a.total);
+
+  // 決勝が終わっているか確認
+  const finalGame=SCHEDULE.find(d=>d.day===13);
+  const finalDone=finalGame&&finalGame.games[0]&&finalGame.games[0].done;
+  if(finalDone)return; // 決勝終了後は表示しない
+
+  // 決勝に選手がいる人がいるか確認
+  const hasAnyFinalist=scores.some(s=>s.hasFinalist);
+  if(!hasAnyFinalist)return;
+
+  const panel=document.createElement('div');
+  panel.style.cssText='background:white;border-radius:12px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;';
+  panel.innerHTML=`<div style="background:linear-gradient(90deg,#7a0a15,#B01020);color:white;padding:10px 16px;font-size:12px;font-weight:900;letter-spacing:2px;">🏆 決勝・逆転＆死守条件</div>`;
+
+  scores.forEach((s,rank)=>{
+    if(!s.hasFinalist)return;
+    const rows=[];
+
+    // このメンバーが決勝チームを持っている場合、得失点差の変化を計算
+    // 決勝の得失点差を+Xとした場合の最終順位を予測
+    const otherScores=scores.filter(o=>o.member!==s.member);
+
+    // 各順位との差を計算してメッセージを作成
+    const aboveMe=scores.filter((o,i)=>i<rank&&o.member!==s.member);
+    const belowMe=scores.filter((o,i)=>i>rank&&o.member!==s.member);
+
+    let msg='';
+    const teamName=s.hasFinal17&&s.hasFinal7?'智弁学園・専大松戸両方':s.hasFinal17?'智弁学園':s.hasFinal7?'専大松戸':'';
+
+    if(rank===0){
+      // 1位：死守条件
+      if(belowMe.length>0&&belowMe.some(b=>b.hasFinalist)){
+        const threatBelow=belowMe.filter(b=>b.hasFinalist);
+        const minGap=Math.min(...threatBelow.map(b=>s.total-b.total));
+        msg=`🛡 現在1位。${teamName}の得失点差が<strong>+${minGap}以上</strong>なら死守！`;
+      }else{
+        msg=`👑 現在1位！決勝結果に関わらず優勝確定！`;
+      }
+    }else{
+      // 2位以下：逆転条件
+      const above1=scores[0];
+      const gap=above1.total-s.total;
+      if(above1.hasFinalist&&!s.hasFinalist){
+        msg=`📊 現在${rank+1}位。1位${above1.member}も決勝チームを持つため逆転は困難`;
+      }else if(!above1.hasFinalist&&s.hasFinalist){
+        msg=`🔥 現在${rank+1}位。${teamName}の得失点差が<strong>+${gap+1}以上</strong>なら逆転1位！`;
+      }else{
+        msg=`📊 現在${rank+1}位（得失点差${s.total>0?'+':''}${s.total}）`;
+      }
+    }
+
+    const row=document.createElement('div');
+    row.style.cssText='padding:10px 14px;border-bottom:1px solid #f0e8d0;font-size:12px;line-height:1.8;';
+    row.innerHTML=`<span style="font-weight:900;color:#B01020;">${s.member}</span>　${msg}`;
+    panel.appendChild(row);
+  });
+
+  col.appendChild(panel);
+}
+
+function renderConditions(col){
+  // 決勝の対戦カード（智弁学園No.17 vs 専大松戸No.7）
+  const FINAL_HOME=17, FINAL_AWAY=7;
+
+  // 現在の全員の得失点差を計算
+  const scores=MEMBERS.map(m=>{
+    const total=calcMemberTotal(m);
+    const hasFinalHome=gm(m).teams.includes(FINAL_HOME);
+    const hasFinalAway=gm(m).teams.includes(FINAL_AWAY);
+    return{member:m,total:total||0,hasFinalHome,hasFinalAway};
+  }).sort((a,b)=>b.total-a.total);
+
+  // 決勝が未消化かチェック
+  const res=gr();
+  const finalDone=res[String(FINAL_HOME)]&&res[String(FINAL_HOME)].f&&res[String(FINAL_HOME)].f.scored!=='';
+  if(finalDone)return; // 決勝終了後は表示しない
+
+  const card=document.createElement('div');
+  card.className='condition-card';
+  card.innerHTML='<div class="condition-header">🏆 決勝で順位はどう変わる？</div>';
+
+  scores.forEach((s,i)=>{
+    const rank=i+1;
+    const rankEmoji=['🥇','🥈','🥉'][i]||(rank+'位');
+    const scoreDisp=s.total>0?`+${s.total}`:String(s.total);
+    const scoreCls=s.total>0?'plus':s.total<0?'minus':'zero';
+
+    let tags='';
+    let detail='';
+
+    if(s.hasFinalHome||s.hasFinalAway){
+      // 決勝に予想チームあり → 結果次第で得失点差が変わる
+      const teamName=s.hasFinalHome?'智弁学園':'専大松戸';
+      tags+=`<span class="condition-tag tag-win">🎯 ${teamName}を予想中</span>`;
+
+      // 上の順位の人と比較
+      if(rank>1){
+        const above=scores[i-1];
+        const gap=above.total-s.total;
+        if(above.hasFinalHome||above.hasFinalAway){
+          detail=`上の${above.member}も決勝チームあり・逆転は得失点差次第`;
+        }else{
+          detail=`${above.member}(${above.total>0?'+':''}${above.total})に${gap}点差。決勝で${gap+1}点差以上つけば逆転！`;
+          tags+=`<span class="condition-tag tag-win">⬆️ 逆転のチャンスあり</span>`;
+        }
+      }else{
+        // 1位
+        const below=scores[1];
+        if(below){
+          const gap=s.total-below.total;
+          if(below.hasFinalHome||below.hasFinalAway){
+            detail=`2位${below.member}も決勝チームあり・差が縮まる可能性あり`;
+            tags+=`<span class="condition-tag tag-lose">⚠️ 2位に追われる可能性</span>`;
+          }else{
+            detail=`2位${below.member}との差${gap}点。このままでも1位確定！`;
+            tags+=`<span class="condition-tag tag-safe">🔒 1位キープ</span>`;
+          }
+        }
+      }
+    }else{
+      // 決勝に予想チームなし → 得失点差は変わらない
+      if(rank===1){
+        // 1位で決勝チームなし
+        const below=scores[1];
+        if(below&&(below.hasFinalHome||below.hasFinalAway)){
+          const gap=s.total-below.total;
+          detail=`2位${below.member}が決勝で${gap+1}点差以上つければ逆転される`;
+          tags+=`<span class="condition-tag tag-lose">⚠️ 逆転される可能性あり</span>`;
+        }else{
+          tags+=`<span class="condition-tag tag-safe">🔒 1位確定！</span>`;
+          detail='決勝に関係なく1位確定です';
+        }
+      }else{
+        // 2位以下で決勝チームなし
+        const above=scores[i-1];
+        if(above&&(above.hasFinalHome||above.hasFinalAway)){
+          tags+=`<span class="condition-tag tag-win">🎯 逆転のチャンスあり</span>`;
+          detail=`上の${above.member}の決勝チームが大差で負ければ逆転の可能性`;
+        }else{
+          tags+=`<span class="condition-tag tag-any">➡️ 順位変動なし</span>`;
+          detail='このまま順位は確定';
+        }
+      }
+    }
+
+    const row=document.createElement('div');
+    row.className='condition-row';
+    row.innerHTML=`<div class="condition-rank">${rankEmoji}</div><div class="condition-detail"><div style="display:flex;align-items:center;gap:8px;"><div class="condition-name">${s.member}</div><div class="condition-score ${scoreCls}">${scoreDisp}</div></div><div class="condition-tags">${tags}</div>${detail?`<div style="font-size:10px;color:rgba(0,0,0,.5);margin-top:3px;">${detail}</div>`:''}</div>`;
+    card.appendChild(row);
+  });
+
+  col.appendChild(card);
 }
 
 function togglePast(){
