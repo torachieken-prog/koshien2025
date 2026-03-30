@@ -959,7 +959,28 @@ function renderWinCondition(col){
     let condMsg='';
 
     if(!s.hasJinen&&!s.hasOsaka){
-      condMsg='他の全員の得点次第で1位の可能性あり';
+      // 自分は決勝チームなし→自分のスコアは変わらない
+      // 1位になるには現在自分より上の人のスコアが自分以下になる必要がある
+      const aboveMe=scores.filter((o,i)=>i<scores.findIndex(x=>x.member===s.member));
+      const threats=aboveMe.filter(o=>o.hasJinen||o.hasOsaka);
+      if(threats.length===0){
+        condMsg='現在1位確定！👑';
+      }else{
+        const conds=threats.map(o=>{
+          const gap=o.total-s.total; // oが自分より何点上か
+          if(o.hasJinen&&!o.hasOsaka){
+            // oは智弁学園持ち→智弁学園が負けるほどoのスコアが下がる
+            // o.total + d <= s.total → d <= s.total - o.total = -gap
+            return `${o.member}(+${o.total})は大阪桐蔭が${gap+1}点差以上で勝てば逆転`;
+          }else if(o.hasOsaka&&!o.hasJinen){
+            // oは大阪桐蔭持ち→大阪桐蔭が負けるほどoのスコアが下がる
+            return `${o.member}(+${o.total})は智弁学園が${gap+1}点差以上で勝てば逆転`;
+          }else{
+            return `${o.member}(+${o.total})は得点差次第`;
+          }
+        });
+        condMsg=conds.join('<br>');
+      }
     }else if(s.hasJinen&&!s.hasOsaka){
       if(minD<=-MAX_DIFF)condMsg=`どんな結果でも1位確定！👑`;
       else if(minD>0)condMsg=`智弁学園が<strong>${minD}点差以上</strong>で勝てば1位🎉`;
