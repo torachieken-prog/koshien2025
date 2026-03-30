@@ -198,6 +198,23 @@
   .game-member-chip{display:inline-block!important;white-space:nowrap;}
   .game-winner{font-weight:900;}
   .today-marker{background:#fff9e6;border-left:3px solid var(--gold);}
+
+  /* 逆転条件 */
+  .condition-card{background:white;border-radius:12px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;}
+  .condition-header{background:linear-gradient(90deg,#7a0a15,var(--crimson));color:white;padding:8px 14px;font-size:12px;font-weight:900;letter-spacing:2px;}
+  .condition-row{display:flex;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--sand);gap:10px;}
+  .condition-row:last-child{border-bottom:none;}
+  .condition-rank{font-size:18px;min-width:32px;text-align:center;padding-top:2px;}
+  .condition-detail{flex:1;}
+  .condition-name{font-weight:900;font-size:14px;}
+  .condition-score{font-size:15px;font-weight:900;}
+  .condition-score.plus{color:var(--crimson);}.condition-score.minus{color:var(--sky);}.condition-score.zero{color:#888;}
+  .condition-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+  .condition-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+  .tag-win{background:#d4edda;color:#155724;}
+  .tag-lose{background:#f8d7da;color:#721c24;}
+  .tag-safe{background:#d1ecf1;color:#0c5460;}
+  .tag-any{background:#e2e3e5;color:#383d41;}
 </style>
 </head>
 <body>
@@ -899,69 +916,99 @@ function renderSchedule(){
 }
 
 function renderWinCondition(col){
-  // 現在の得失点差を計算
-  const scores=MEMBERS.map(m=>{
-    const total=calcMemberTotal(m);
-    const teams=gm(m).teams;
-    // 決勝に出場中のチームを持っているか
-    const hasFinal17=teams.includes(17); // 智弁学園
-    const hasFinal7=teams.includes(7);   // 専大松戸
-    return{member:m,total:total||0,hasFinal17,hasFinal7,hasFinalist:hasFinal17||hasFinal7};
-  }).sort((a,b)=>b.total-a.total);
-
   // 決勝が終わっているか確認
   const finalGame=SCHEDULE.find(d=>d.day===13);
   const finalDone=finalGame&&finalGame.games[0]&&finalGame.games[0].done;
-  if(finalDone)return; // 決勝終了後は表示しない
+  if(finalDone)return;
 
-  // 決勝に選手がいる人がいるか確認
-  const hasAnyFinalist=scores.some(s=>s.hasFinalist);
-  if(!hasAnyFinalist)return;
+  const JINEN=17; // 智弁学園
+  const SENMAT=7; // 専大松戸
+
+  // 現在の得失点差を計算
+  const scores=MEMBERS.map(m=>{
+    const total=calcMemberTotal(m)||0;
+    const teams=gm(m).teams;
+    const hasJinen=teams.includes(JINEN);
+    const hasSenmat=teams.includes(SENMAT);
+    return{member:m,total,hasJinen,hasSenmat};
+  }).sort((a,b)=>b.total-a.total);
+
+  // 1位になれる可能性がある人を絞り込む
+  // 決勝の得失点差をdとすると:
+  //   智弁学園を持つ人: total + d（智弁学園が勝てばd>0、負ければd<0）
+  //   専大松戸を持つ人: total - d（専大松戸が勝てば-d>0）
+  //   両方持つ人: total（得失点差相殺）
+  //   誰も持たない人: total（変化なし）
+
+  // 理論上の最大得点差（現実的に20点差程度まで）
+  const MAX_DIFF=30;
+
+  // 各メンバーが1位になれるかチェック
+  const canWin=scores.map(s=>{
+    // dを-MAX_DIFFからMAX_DIFFまで試す（dは智弁学園 - 専大松戸の得失点差）
+    let minDiff=null; // 1位になれる最小のd
+    for(let d=-MAX_DIFF;d<=MAX_DIFF;d++){
+      const myFinal=s.hasJinen&&!s.hasSenmat?d:(!s.hasJinen&&s.hasSenmat?-d:0);
+      const myTotal=s.total+myFinal;
+      // 全員の最終スコアを計算して自分が1位かチェック
+      const allFinal=scores.map(o=>{
+        const oFinal=o.hasJinen&&!o.hasSenmat?d:(!o.hasJinen&&o.hasSenmat?-d:0);
+        return o.total+oFinal;
+      });
+      const myRank=allFinal.filter(t=>t>myTotal).length;
+      if(myRank===0){
+        if(minDiff===null)minDiff=d;
+      }
+    }
+    return{...s,minDiff};
+  }).filter(s=>s.minDiff!==null);
+
+  if(canWin.length===0)return;
 
   const panel=document.createElement('div');
   panel.style.cssText='background:white;border-radius:12px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);overflow:hidden;';
-  panel.innerHTML=`<div style="background:linear-gradient(90deg,#7a0a15,#B01020);color:white;padding:10px 16px;font-size:12px;font-weight:900;letter-spacing:2px;">🏆 決勝・逆転＆死守条件</div>`;
+  panel.innerHTML=`<div style="background:linear-gradient(90deg,#7a0a15,#B01020);color:white;padding:10px 16px;font-size:12px;font-weight:900;letter-spacing:2px;">🏆 1位になれる条件（決勝）</div>
+  <div style="padding:8px 14px;font-size:11px;color:rgba(0,0,0,.4);border-bottom:1px solid #f0e8d0;">智弁学園（左）vs 専大松戸（右）</div>`;
 
-  scores.forEach((s,rank)=>{
-    if(!s.hasFinalist)return;
-    const rows=[];
+  canWin.forEach(s=>{
+    const rank=scores.findIndex(x=>x.member===s.member)+1;
+    const teamName=s.hasJinen&&s.hasSenmat?'両方':s.hasJinen?'智弁学園':s.hasSenmat?'専大松戸':'なし';
+    let condMsg='';
 
-    // このメンバーが決勝チームを持っている場合、得失点差の変化を計算
-    // 決勝の得失点差を+Xとした場合の最終順位を予測
-    const otherScores=scores.filter(o=>o.member!==s.member);
-
-    // 各順位との差を計算してメッセージを作成
-    const aboveMe=scores.filter((o,i)=>i<rank&&o.member!==s.member);
-    const belowMe=scores.filter((o,i)=>i>rank&&o.member!==s.member);
-
-    let msg='';
-    const teamName=s.hasFinal17&&s.hasFinal7?'智弁学園・専大松戸両方':s.hasFinal17?'智弁学園':s.hasFinal7?'専大松戸':'';
-
-    if(rank===0){
-      // 1位：死守条件
-      if(belowMe.length>0&&belowMe.some(b=>b.hasFinalist)){
-        const threatBelow=belowMe.filter(b=>b.hasFinalist);
-        const minGap=Math.min(...threatBelow.map(b=>s.total-b.total));
-        msg=`🛡 現在1位。${teamName}の得失点差が<strong>+${minGap}以上</strong>なら死守！`;
-      }else{
-        msg=`👑 現在1位！決勝結果に関わらず優勝確定！`;
-      }
+    if(!s.hasJinen&&!s.hasSenmat){
+      condMsg='決勝チームなし。他の全員の得点次第で1位の可能性あり！';
     }else{
-      // 2位以下：逆転条件
-      const above1=scores[0];
-      const gap=above1.total-s.total;
-      if(above1.hasFinalist&&!s.hasFinalist){
-        msg=`📊 現在${rank+1}位。1位${above1.member}も決勝チームを持つため逆転は困難`;
-      }else if(!above1.hasFinalist&&s.hasFinalist){
-        msg=`🔥 現在${rank+1}位。${teamName}の得失点差が<strong>+${gap+1}以上</strong>なら逆転1位！`;
+      // 1位になれる得点差の範囲を見つける
+      const winDiffs=[];
+      for(let d=-MAX_DIFF;d<=MAX_DIFF;d++){
+        const myFinal=s.hasJinen&&!s.hasSenmat?d:(!s.hasJinen&&s.hasSenmat?-d:0);
+        const myTotal=s.total+myFinal;
+        const allFinal=scores.map(o=>{
+          const oFinal=o.hasJinen&&!o.hasSenmat?d:(!o.hasJinen&&o.hasSenmat?-d:0);
+          return o.total+oFinal;
+        });
+        const myRank=allFinal.filter(t=>t>myTotal).length;
+        if(myRank===0)winDiffs.push(d);
+      }
+      if(winDiffs.length===0){condMsg='条件なし';return;}
+      const minD=Math.min(...winDiffs),maxD=Math.max(...winDiffs);
+      const team1st=s.hasJinen&&!s.hasSenmat?'智弁学園':s.hasSenmat&&!s.hasJinen?'専大松戸':null;
+      if(team1st==='智弁学園'){
+        if(minD>0)condMsg=`智弁学園が<strong>${minD}点差以上</strong>で勝てば1位🎉`;
+        else if(minD<=0&&maxD>=0)condMsg=`智弁学園が<strong>${Math.abs(minD)}点差以内</strong>の負けでもOK！`;
+        else condMsg=`専大松戸が<strong>${Math.abs(maxD)}点差以上</strong>勝つと1位不可`;
+      }else if(team1st==='専大松戸'){
+        if(minD<0)condMsg=`専大松戸が<strong>${Math.abs(minD)}点差以上</strong>で勝てば1位🎉`;
+        else if(minD>=0&&maxD<0)condMsg=`専大松戸が<strong>${maxD}点差以内</strong>の負けでもOK！`;
+        else condMsg=`専大松戸が<strong>${Math.abs(minD)}点差以上</strong>で勝てば1位🎉`;
       }else{
-        msg=`📊 現在${rank+1}位（得失点差${s.total>0?'+':''}${s.total}）`;
+        condMsg=`得失点差${minD>0?'+':''}${minD}〜${maxD>0?'+':''}${maxD}の範囲で1位`;
       }
     }
 
     const row=document.createElement('div');
     row.style.cssText='padding:10px 14px;border-bottom:1px solid #f0e8d0;font-size:12px;line-height:1.8;';
-    row.innerHTML=`<span style="font-weight:900;color:#B01020;">${s.member}</span>　${msg}`;
+    row.innerHTML=`<div style="font-weight:900;color:#B01020;margin-bottom:2px;">${s.member} <span style="font-weight:400;color:rgba(0,0,0,.4);">現在${rank}位 / 予想:${teamName}</span></div><div>${condMsg}</div>`;
     panel.appendChild(row);
   });
 
