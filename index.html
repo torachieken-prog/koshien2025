@@ -969,11 +969,10 @@ function renderWinCondition(col){
         const conds=threats.map(o=>{
           const gap=o.total-s.total; // oが自分より何点上か
           if(o.hasJinen&&!o.hasOsaka){
-            // oは智弁学園持ち→智弁学園が負けるほどoのスコアが下がる
-            // o.total + d <= s.total → d <= s.total - o.total = -gap
-            return `智弁学園が大阪桐蔭に${gap+1}点差以上で勝てば${s.member}が単独1位！`;
+            // oは智弁学園持ち→大阪桐蔭が勝つとoのスコアが下がる
+            return `大阪桐蔭が智弁学園に${gap+1}点差以上で勝てば${s.member}が単独1位！`;
           }else if(o.hasOsaka&&!o.hasJinen){
-            // oは大阪桐蔭持ち→大阪桐蔭が負けるほどoのスコアが下がる
+            // oは大阪桐蔭持ち→智弁学園が勝つとoのスコアが下がる
             return `智弁学園が大阪桐蔭に${gap+1}点差以上で勝てば${s.member}が単独1位！`;
           }else{
             return `${o.member}(+${o.total})は得点差次第`;
