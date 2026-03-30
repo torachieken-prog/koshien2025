@@ -934,11 +934,11 @@ function renderWinCondition(col){
   function getWinRange(s){
     const wins=[];
     for(let d=-MAX_DIFF;d<=MAX_DIFF;d++){
-      const myBonus=s.hasJinen&&!s.hasOsaka?d:s.hasOsaka&&!s.hasJinen?-d:0;
+      const myBonus=s.hasJinen&&s.hasOsaka?0:s.hasJinen?d:s.hasOsaka?-d:0;
       const myTotal=s.total+myBonus;
       const beaten=scores.filter(o=>o.member!==s.member).some(o=>{
-        const oBonus=o.hasJinen&&!o.hasOsaka?d:o.hasOsaka&&!o.hasJinen?-d:0;
-        return o.total+oBonus>=myTotal; // 同点は引き分けなので単独1位にならない
+        const oBonus=o.hasJinen&&o.hasOsaka?0:o.hasJinen?d:o.hasOsaka?-d:0;
+        return o.total+oBonus>myTotal; // 同点も1位とみなす
       });
       if(!beaten)wins.push(d);
     }
@@ -973,7 +973,7 @@ function renderWinCondition(col){
             return `大阪桐蔭が智弁学園に${gap+1}点差以上で勝てば${s.member}が単独1位！`;
           }else if(o.hasOsaka&&!o.hasJinen){
             // oは大阪桐蔭持ち→智弁学園が勝つとoのスコアが下がる
-            return `智弁学園が大阪桐蔭に${gap+1}点差以上で勝てば${s.member}が単独1位！`;
+            return `智弁学園が大阪桐蔭に${gap+1}点差以上で勝てば1位！`;
           }else{
             return `${o.member}(+${o.total})は得点差次第`;
           }
@@ -982,7 +982,7 @@ function renderWinCondition(col){
       }
     }else if(s.hasJinen&&!s.hasOsaka){
       if(minD<=-MAX_DIFF)condMsg=`どんな結果でも1位確定！👑`;
-      else if(minD>0)condMsg=`智弁学園が<strong>${minD}点差以上</strong>で勝てば1位🎉`;
+      else if(minD>0)condMsg=`智弁学園が${minD}点差以上で勝てば1位！`;
       else condMsg=`智弁学園が<strong>${Math.abs(minD)}点差以内</strong>の負けでもOK`;
     }else if(s.hasOsaka&&!s.hasJinen){
       if(maxD>=MAX_DIFF)condMsg=`どんな結果でも1位確定！👑`;
