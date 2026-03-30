@@ -961,7 +961,7 @@ function renderWinCondition(col){
     if(!s.hasJinen&&!s.hasOsaka){
       condMsg='他の全員の得点次第で1位の可能性あり';
     }else if(s.hasJinen&&!s.hasOsaka){
-      if(minD<=−MAX_DIFF)condMsg=`どんな結果でも1位確定！👑`;
+      if(minD<=-MAX_DIFF)condMsg=`どんな結果でも1位確定！👑`;
       else if(minD>0)condMsg=`智弁学園が<strong>${minD}点差以上</strong>で勝てば1位🎉`;
       else condMsg=`智弁学園が<strong>${Math.abs(minD)}点差以内</strong>の負けでもOK`;
     }else if(s.hasOsaka&&!s.hasJinen){
