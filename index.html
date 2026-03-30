@@ -931,6 +931,7 @@ function renderWinCondition(col){
   const MAX_DIFF=50;
 
   // 各メンバーが1位になれるd（智弁学園-大阪桐蔭の得失点差）の範囲を計算
+  // 同じ決勝チーム構成の人との同点はOK、異なる人との同点はNG
   function getWinRange(s){
     const wins=[];
     for(let d=-MAX_DIFF;d<=MAX_DIFF;d++){
@@ -938,7 +939,10 @@ function renderWinCondition(col){
       const myTotal=s.total+myBonus;
       const beaten=scores.filter(o=>o.member!==s.member).some(o=>{
         const oBonus=o.hasJinen&&o.hasOsaka?0:o.hasJinen?d:o.hasOsaka?-d:0;
-        return o.total+oBonus>myTotal; // 同点も1位とみなす
+        const oTotal=o.total+oBonus;
+        // 同じ決勝チーム構成なら同点OK、そうでなければ同点はNG
+        const sameTeam=(s.hasJinen===o.hasJinen&&s.hasOsaka===o.hasOsaka);
+        return sameTeam ? oTotal>myTotal : oTotal>=myTotal;
       });
       if(!beaten)wins.push(d);
     }
