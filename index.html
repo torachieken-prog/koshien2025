@@ -462,10 +462,10 @@ const SCHEDULE=[
     {time:'11:00',round:'sf',home:'中京大中京',away:'智弁学園',homeNo:13,awayNo:17,score:'0-4',done:true},
     {time:'13:30',round:'sf',home:'専大松戸',away:'大阪桐蔭',homeNo:7,awayNo:18,score:'4-0',done:true},
   ]},
-  {date:'3/30(月)',day:12,today:false,games:[
+  {date:'3/30(月)',day:12,today:true,games:[
     {time:'',round:'',home:'',away:'',homeNo:0,awayNo:0,score:'休養日',done:false,rest:true},
   ]},
-  {date:'3/31(火)',day:13,today:true,games:[
+  {date:'3/31(火)',day:13,today:false,games:[
     {time:'12:30',round:'f',home:'智弁学園',away:'専大松戸',homeNo:17,awayNo:7,score:'',done:false},
   ]},
 ];
@@ -846,9 +846,10 @@ function renderSchedule(){
   renderWinCondition(col);
 
   // 今日→未来→過去の順に表示
-  const todayDays=SCHEDULE.filter(d=>d.today);
-  const futureDays=SCHEDULE.filter(d=>!d.today&&!d.games.every(g=>g.done||g.rest));
-  const pastDays=SCHEDULE.filter(d=>!d.today&&d.games.every(g=>g.done||g.rest)).reverse();
+  // 休養日を除いた未来の試合を先頭に、過去を末尾に
+  const futureDays=SCHEDULE.filter(d=>d.games.some(g=>!g.done&&!g.rest)).sort((a,b)=>a.day-b.day);
+  const pastDays=SCHEDULE.filter(d=>!d.games.some(g=>!g.done&&!g.rest)).reverse();
+  const todayDays=[]; // 休養日は表示しない
 
   function renderDay(day){
     const block=document.createElement('div');
